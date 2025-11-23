@@ -136,40 +136,65 @@ try {
     $router->get('/manga/add', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/login'));
+            exit;
         }
+        $GLOBALS['session'] = $session;
+        $GLOBALS['db'] = $db;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/admin/manga_add.php';
+        exit;
     });
     
     // 编辑漫画页面
     $router->get('/manga/edit', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/login'));
+            exit;
         }
+        $GLOBALS['session'] = $session;
+        $GLOBALS['db'] = $db;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/admin/manga_edit.php';
+        exit;
     });
     
     // 漫画列表
-    $router->get('/manga/list', function() use ($session, $db) {
+    $router->get('/manga/list', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/login'));
+            exit;
         }
+        $GLOBALS['session'] = $session;
+        $GLOBALS['db'] = $db;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/admin/manga_list.php';
+        exit;
     });
     
     // 标签管理
-    $router->get('/tags', function() use ($session, $db) {
+    $router->get('/tags', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/login'));
+            exit;
         }
+        $GLOBALS['session'] = $session;
+        $GLOBALS['db'] = $db;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/admin/tags.php';
+        exit;
     });
     
     // 访问码更新
-    $router->get('/access-code', function() use ($session, $db) {
+    $router->get('/access-code', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/login'));
+            exit;
         }
+        $GLOBALS['session'] = $session;
+        $GLOBALS['db'] = $db;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/admin/access_code.php';
+        exit;
     });
     
     // 404页面
