@@ -269,6 +269,46 @@ class Session
     {
         return $this->get('admin_id');
     }
+    
+    /**
+     * 生成CSRF Token
+     */
+    public function generateCsrfToken()
+    {
+        if (!$this->has('csrf_token')) {
+            $this->set('csrf_token', bin2hex(random_bytes(32)));
+        }
+        return $this->get('csrf_token');
+    }
+    
+    /**
+     * 获取CSRF Token
+     */
+    public function getCsrfToken()
+    {
+        return $this->generateCsrfToken();
+    }
+    
+    /**
+     * 验证CSRF Token
+     */
+    public function verifyCsrfToken($token)
+    {
+        $sessionToken = $this->get('csrf_token');
+        if (empty($sessionToken) || empty($token)) {
+            return false;
+        }
+        return hash_equals($sessionToken, $token);
+    }
+    
+    /**
+     * 生成CSRF隐藏字段HTML
+     */
+    public function csrfField()
+    {
+        $token = $this->getCsrfToken();
+        return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
+    }
 }
 
 
