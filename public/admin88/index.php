@@ -59,8 +59,7 @@ try {
     // 后台首页
     $router->get('/', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/login'));
-            exit;
+            Router::redirectTo('/admin88/login.php');
         }
         // 让视图文件能访问变量
         $GLOBALS['session'] = $session;
@@ -73,12 +72,9 @@ try {
     // 登录页面 - 重定向到独立登录文件
     $router->get('/login', function() use ($session) {
         if ($session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/'));
-            exit;
+            Router::redirectTo('/admin88/');
         }
-        // 重定向到独立的login.php文件
-        Router::redirect(Router::url('/admin88/login.php'));
-        exit;
+        Router::redirectTo('/admin88/login.php');
     });
     
     // 登录处理
@@ -86,8 +82,7 @@ try {
         // CSRF Token验证
         if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
             $_SESSION['login_error'] = 'CSRF验证失败，请刷新页面重试';
-            Router::redirect(Router::url('/admin88/login'));
-            return;
+            Router::redirectTo('/admin88/login.php');
         }
         
         $username = $_POST['username'] ?? '';
@@ -100,8 +95,7 @@ try {
         // 如果5分钟内失败超过5次，暂时锁定
         if ($failCount >= 5 && (time() - $lastFailTime) < 300) {
             $_SESSION['login_error'] = '登录失败次数过多，请5分钟后再试';
-            Router::redirect(Router::url('/admin88/login'));
-            return;
+            Router::redirectTo('/admin88/login.php');
         }
         
         $admin = $db->queryOne(
@@ -115,28 +109,27 @@ try {
             $session->delete('login_last_fail_time');
             
             $session->adminLogin($admin['id'], $admin['username']);
-            Router::redirect(Router::url('/admin88/'));
+            Router::redirectTo('/admin88/');
         } else {
             // 登录失败，增加失败计数
             $session->set('login_fail_count', $failCount + 1);
             $session->set('login_last_fail_time', time());
             
             $_SESSION['login_error'] = '用户名或密码错误';
-            Router::redirect(Router::url('/admin88/login'));
+            Router::redirectTo('/admin88/login.php');
         }
     });
     
     // 登出
     $router->get('/logout', function() use ($session) {
         $session->adminLogout();
-        Router::redirect(Router::url('/admin88/login'));
+        Router::redirectTo('/admin88/login.php');
     });
     
     // 添加漫画页面
     $router->get('/manga/add', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/login'));
-            exit;
+            Router::redirectTo('/admin88/login.php');
         }
         $GLOBALS['session'] = $session;
         $GLOBALS['db'] = $db;
@@ -148,8 +141,7 @@ try {
     // 编辑漫画页面
     $router->get('/manga/edit', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/login'));
-            exit;
+            Router::redirectTo('/admin88/login.php');
         }
         $GLOBALS['session'] = $session;
         $GLOBALS['db'] = $db;
@@ -161,8 +153,7 @@ try {
     // 漫画列表
     $router->get('/manga/list', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/login'));
-            exit;
+            Router::redirectTo('/admin88/login.php');
         }
         $GLOBALS['session'] = $session;
         $GLOBALS['db'] = $db;
@@ -174,8 +165,7 @@ try {
     // 标签管理
     $router->get('/tags', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/login'));
-            exit;
+            Router::redirectTo('/admin88/login.php');
         }
         $GLOBALS['session'] = $session;
         $GLOBALS['db'] = $db;
@@ -187,8 +177,7 @@ try {
     // 访问码更新
     $router->get('/access-code', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
-            Router::redirect(Router::url('/admin88/login'));
-            exit;
+            Router::redirectTo('/admin88/login.php');
         }
         $GLOBALS['session'] = $session;
         $GLOBALS['db'] = $db;

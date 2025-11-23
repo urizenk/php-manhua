@@ -44,4 +44,15 @@ return [
         'admin_path'  => '/admin88',      // 后台路径
         'timezone'    => 'Asia/Shanghai',  // 时区
     ],
+    
+    // 应用配置
+    'app' => [
+        'debug'       => true,                        // 调试模式（生产环境设为false）
+        'timezone'    => 'Asia/Shanghai',             // 时区
+        'base_url'    => 'http://localhost',          // 【重要】应用基础URL（部署时必须修改）
+        'app'         => '/path/to/app',              // 应用目录（自动设置，无需修改）
+        'public'      => '/path/to/public',           // 公共目录（自动设置，无需修改）
+        'storage'     => '/path/to/storage',          // 存储目录（自动设置，无需修改）
+        'uploads'     => '/path/to/uploads',          // 上传目录（自动设置，无需修改）
+    ],
 ];

@@ -187,6 +187,19 @@ class Router
         header('Location: ' . $url, true, $statusCode);
         exit;
     }
+    
+    /**
+     * 相对路径重定向（不依赖base_url配置）
+     */
+    public static function redirectTo($path, $statusCode = 302)
+    {
+        // 确保路径以/开头
+        if (substr($path, 0, 1) !== '/') {
+            $path = '/' . $path;
+        }
+        header('Location: ' . $path, true, $statusCode);
+        exit;
+    }
 }
 
 

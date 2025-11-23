@@ -100,7 +100,7 @@ try {
     // 日更板块
     $router->get('/daily', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/daily.php';
     });
@@ -108,7 +108,7 @@ try {
     // 韩漫合集
     $router->get('/korean', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/korean.php';
     });
@@ -116,7 +116,7 @@ try {
     // 完结短漫
     $router->get('/short', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/short.php';
     });
@@ -124,7 +124,7 @@ try {
     // 日漫推荐
     $router->get('/japan-recommend', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/japan_recommend.php';
     });
@@ -132,7 +132,7 @@ try {
     // 日漫合集
     $router->get('/japan-collection', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/japan_collection.php';
     });
@@ -140,7 +140,7 @@ try {
     // 动漫合集
     $router->get('/anime', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/anime.php';
     });
@@ -148,7 +148,7 @@ try {
     // 广播剧合集
     $router->get('/drama', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/drama.php';
     });
@@ -156,7 +156,7 @@ try {
     // 失效反馈
     $router->get('/feedback', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/feedback.php';
     });
@@ -164,7 +164,7 @@ try {
     // 防走丢
     $router->get('/backup', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/backup.php';
     });
@@ -172,7 +172,7 @@ try {
     // 详情页
     $router->get('/detail/:id', function($id) use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/detail.php';
     });
@@ -180,7 +180,7 @@ try {
     // 搜索
     $router->get('/search', function() use ($session, $db) {
         if (!$session->isAccessVerified()) {
-            Router::redirect(Router::url('/'));
+            Router::redirectTo('/');
         }
         require APP_PATH . '/views/frontend/search.php';
     });
