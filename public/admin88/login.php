@@ -3,6 +3,9 @@
  * 独立登录页面 - 不依赖路由系统
  */
 
+// 启动输出缓冲，防止Session启动前有输出
+ob_start();
+
 // 定义应用根目录
 define('APP_PATH', dirname(dirname(__DIR__)));
 
