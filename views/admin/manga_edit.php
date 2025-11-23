@@ -25,18 +25,23 @@ $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
-    $typeId = $_POST['type_id'] ?? 0;
-    $tagId = $_POST['tag_id'] ?? null;
-    $title = trim($_POST['title'] ?? '');
-    $status = $_POST['status'] ?? null;
-    $resourceLink = trim($_POST['resource_link'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $coverPosition = $_POST['cover_position'] ?? 'center';
-    
-    $errors = [];
-    
-    if (!$typeId) $errors[] = '请选择漫画类型';
-    if (!$title) $errors[] = '请输入漫画标题';
+    // CSRF Token验证
+    if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message = 'CSRF验证失败，请刷新页面重试';
+        $messageType = 'danger';
+    } else {
+        $typeId = $_POST['type_id'] ?? 0;
+        $tagId = $_POST['tag_id'] ?? null;
+        $title = trim($_POST['title'] ?? '');
+        $status = $_POST['status'] ?? null;
+        $resourceLink = trim($_POST['resource_link'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $coverPosition = $_POST['cover_position'] ?? 'center';
+        
+        $errors = [];
+        
+        if (!$typeId) $errors[] = '请选择漫画类型';
+        if (!$title) $errors[] = '请输入漫画标题';
     
     // 处理封面图片上传
     $coverImage = $manga['cover_image']; // 保留原图
@@ -88,9 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
             $message = '更新失败，请重试';
             $messageType = 'danger';
         }
-    } else {
-        $message = implode('<br>', $errors);
-        $messageType = 'danger';
+        } else {
+            $message = implode('<br>', $errors);
+            $messageType = 'danger';
+        }
     }
 }
 
@@ -152,6 +158,8 @@ include APP_PATH . '/views/admin/layout_header.php';
     </div>
     <div class="card-body">
         <form method="POST" enctype="multipart/form-data" id="mangaForm">
+            <?php echo $session->csrfField(); ?>
+            
             <!-- 基本信息 -->
             <div class="form-section">
                 <div class="form-section-title">基本信息</div>

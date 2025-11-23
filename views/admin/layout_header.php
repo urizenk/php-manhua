@@ -1,3 +1,7 @@
+<?php
+// 引入安全HTTP头
+require_once APP_PATH . '/views/admin/security_headers.php';
+?>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>

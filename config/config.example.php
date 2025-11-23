@@ -17,12 +17,14 @@ return [
     
     // Session配置
     'session' => [
-        'name'     => 'MANHUA_SESSION',  // Session名称
-        'lifetime' => 7200,              // Session有效期（秒）2小时
-        'path'     => '/',               // Session路径
-        'domain'   => '',                // Session域名（留空为当前域名）
-        'secure'   => false,             // 是否仅HTTPS传输（生产环境建议true）
-        'httponly' => true,              // 是否仅HTTP访问（防止XSS）
+        'name'                    => 'MANHUA_SESSION',  // Session名称
+        'lifetime'                => 7200,              // Session生命周期（秒）
+        'cookie_httponly'         => true,              // 仅HTTP访问（防XSS）
+        'cookie_secure'           => false,             // HTTPS传输（生产环境必须true）
+        'cookie_samesite'         => 'Strict',          // 防CSRF攻击（Strict/Lax/None）
+        'use_strict_mode'         => true,              // 严格模式（防会话固定）
+        'sid_length'              => 48,                // Session ID长度（增加安全性）
+        'sid_bits_per_character'  => 6,                 // 每字符位数（增加熵）
     ],
     
     // 文件上传配置

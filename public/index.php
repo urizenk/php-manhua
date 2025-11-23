@@ -23,16 +23,18 @@ if ($config['app']['debug']) {
     define('APP_DEBUG', false);
 }
 
-// 自动加载器
+// 自动加载类
 spl_autoload_register(function ($class) {
     $classPath = str_replace('\\', '/', $class);
     $classPath = str_replace('App/', 'app/', $classPath);
     $file = APP_PATH . '/' . $classPath . '.php';
-    
     if (file_exists($file)) {
         require $file;
     }
 });
+
+// 加载辅助函数
+require APP_PATH . '/app/helpers.php';
 
 // 初始化核心组件
 use App\Core\Database;
@@ -63,8 +65,31 @@ try {
     $router->post('/verify-code', function() use ($session, $db) {
         header('Content-Type: application/json');
         
+        // 检查失败次数（防暴力破解）
+        $failCount = $session->get('verify_fail_count', 0);
+        $lastFailTime = $session->get('verify_last_fail_time', 0);
+        
+        // 如果5分钟内失败超过5次，暂时锁定
+        if ($failCount >= 5 && (time() - $lastFailTime) < 300) {
+            echo json_encode([
+                'success' => false,
+                'message' => '尝试次数过多，请5分钟后再试'
+            ]);
+            exit;
+        }
+        
         $code = $_POST['code'] ?? '';
         $isValid = $session->verifyAccessCode($code, $db);
+        
+        if (!$isValid) {
+            // 验证失败，增加失败计数
+            $session->set('verify_fail_count', $failCount + 1);
+            $session->set('verify_last_fail_time', time());
+        } else {
+            // 验证成功，清除失败计数
+            $session->delete('verify_fail_count');
+            $session->delete('verify_last_fail_time');
+        }
         
         echo json_encode([
             'success' => $isValid,

@@ -6,10 +6,15 @@ $pageTitle = '漫画列表';
 
 // 处理批量操作
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['batch_action'])) {
-    $action = $_POST['batch_action'];
-    $ids = $_POST['manga_ids'] ?? [];
-    
-    if (!empty($ids)) {
+    // CSRF Token验证
+    if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message = 'CSRF验证失败，请刷新页面重试';
+        $messageType = 'danger';
+    } else {
+        $action = $_POST['batch_action'];
+        $ids = $_POST['manga_ids'] ?? [];
+        
+        if (!empty($ids)) {
         switch ($action) {
             case 'delete':
                 $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -39,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['batch_action'])) {
                     $messageType = 'success';
                 }
                 break;
+        }
         }
     }
 }
@@ -172,6 +178,7 @@ include APP_PATH . '/views/admin/layout_header.php';
 <div class="card mb-3">
     <div class="card-body">
         <form method="POST" id="batchForm">
+            <?php echo $session->csrfField(); ?>
             <div class="row g-2">
                 <div class="col-auto">
                     <span class="badge bg-secondary">已选择：<span id="selectedCount">0</span> 个</span>
@@ -390,7 +397,10 @@ $(document).ready(function() {
             $.ajax({
                 url: "/admin88/api/delete-manga.php",
                 type: "POST",
-                data: { id: id },
+                data: { 
+                    id: id,
+                    csrf_token: "<?php echo $session->generateCsrfToken(); ?>"
+                },
                 dataType: "json",
                 success: function(res) {
                     if (res.success) {

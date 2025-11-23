@@ -61,6 +61,11 @@ class Upload
             $this->error = '无效的图片文件';
             return false;
         }
+        
+        // 验证MIME类型
+        if (!$this->validateMimeType($file)) {
+            return false;
+        }
 
         // 生成唯一文件名
         $filename = $this->generateFilename($ext);
@@ -220,10 +225,38 @@ class Upload
     /**
      * 验证是否为真实图片
      */
-    private function isValidImage($path)
+    private function isValidImage($filePath)
     {
-        $imageInfo = @getimagesize($path);
+        $imageInfo = @getimagesize($filePath);
         return $imageInfo !== false;
+    }
+    
+    /**
+     * 验证MIME类型
+     */
+    private function validateMimeType($file)
+    {
+        $allowedMimes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+        
+        // 使用finfo检测真实MIME类型
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            
+            if (!in_array($mimeType, $allowedMimes)) {
+                $this->error = '文件MIME类型不匹配（检测到：' . $mimeType . '）';
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     /**

@@ -79,6 +79,19 @@
             <?php endif; ?>
             
             <form method="POST" action="/admin88/login">
+                <?php 
+                // 生成CSRF Token（登录页面需要先初始化Session）
+                if (!isset($session)) {
+                    session_start();
+                    if (!isset($_SESSION['csrf_token'])) {
+                        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                    }
+                    echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') . '">';
+                } else {
+                    echo $session->csrfField();
+                }
+                ?>
+                
                 <div class="mb-3">
                     <label class="form-label">用户名</label>
                     <input type="text" class="form-control" name="username" required autofocus>

@@ -40,6 +40,23 @@ class Session
         if (!empty($config['cookie_secure'])) {
             ini_set('session.cookie_secure', 1);
         }
+        
+        // 新增安全配置
+        if (!empty($config['cookie_samesite'])) {
+            ini_set('session.cookie_samesite', $config['cookie_samesite']);
+        }
+        
+        if (!empty($config['use_strict_mode'])) {
+            ini_set('session.use_strict_mode', 1);
+        }
+        
+        if (!empty($config['sid_length'])) {
+            ini_set('session.sid_length', $config['sid_length']);
+        }
+        
+        if (!empty($config['sid_bits_per_character'])) {
+            ini_set('session.sid_bits_per_character', $config['sid_bits_per_character']);
+        }
 
         session_start();
         self::$started = true;
@@ -186,7 +203,7 @@ class Session
     /**
      * 记录访问日志
      */
-    private function logAccess($code, $isValid)
+    private function logAccess($inputCode, $isValid)
     {
         if (!$this->db) {
             return;
@@ -194,14 +211,13 @@ class Session
 
         try {
             $this->db->insert('access_logs', [
-                'ip_address'  => $this->getClientIp(),
-                'access_code' => $code,
-                'is_success'  => $isValid ? 1 : 0,
-                'user_agent'  => $_SERVER['HTTP_USER_AGENT'] ?? '',
+                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+                'input_code' => $inputCode,
+                'is_valid' => $isValid ? 1 : 0,
             ]);
         } catch (\Exception $e) {
-            // 日志记录失败不影响主流程
-            error_log('[Session] Failed to log access: ' . $e->getMessage());
+            // 记录日志失败不影响主流程
         }
     }
 

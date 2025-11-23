@@ -17,12 +17,32 @@ spl_autoload_register(function ($class) {
     }
 });
 
+// 加载辅助函数
+require APP_PATH . '/app/helpers.php';
+
 use App\Core\Database;
+use App\Core\Session;
 
 header('Content-Type: application/json');
 
 try {
     $db = Database::getInstance($config['database']);
+    
+    // 初始化Session
+    $session = new Session($config['session']);
+    $session->setDatabase($db);
+    
+    // 验证管理员登录
+    if (!$session->isAdminLoggedIn()) {
+        echo json_encode(['success' => false, 'message' => '未登录']);
+        exit;
+    }
+    
+    // CSRF Token验证
+    if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        echo json_encode(['success' => false, 'message' => 'CSRF验证失败']);
+        exit;
+    }
     
     $id = $_POST['id'] ?? 0;
     

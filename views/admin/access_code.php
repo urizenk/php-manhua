@@ -9,12 +9,17 @@ $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_code'])) {
-    $newCode = trim($_POST['new_code']);
-    
-    if (empty($newCode)) {
-        $message = '访问码不能为空';
+    // CSRF Token验证
+    if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+        $message = 'CSRF验证失败，请刷新页面重试';
         $messageType = 'danger';
     } else {
+        $newCode = trim($_POST['new_code']);
+        
+        if (empty($newCode)) {
+            $message = '访问码不能为空';
+            $messageType = 'danger';
+        } else {
         $result = $db->update(
             'site_config',
             ['config_value' => $newCode, 'updated_at' => date('Y-m-d H:i:s')],
@@ -25,9 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_code'])) {
         if ($result !== false) {
             $message = '访问码更新成功！';
             $messageType = 'success';
-        } else {
-            $message = '访问码更新失败，请检查数据库连接';
-            $messageType = 'danger';
+            } else {
+                $message = '访问码更新失败，请检查数据库连接';
+                $messageType = 'danger';
+            }
         }
     }
 }
@@ -68,6 +74,8 @@ include APP_PATH . '/views/admin/layout_header.php';
             </div>
             <div class="card-body">
                 <form method="POST">
+                    <?php echo $session->csrfField(); ?>
+                    
                     <div class="mb-3">
                         <label class="form-label">当前访问码</label>
                         <input type="text" class="form-control" value="<?php echo htmlspecialchars($currentCode); ?>" readonly>

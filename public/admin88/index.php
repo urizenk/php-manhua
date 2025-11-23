@@ -23,16 +23,18 @@ if ($config['app']['debug']) {
     define('APP_DEBUG', false);
 }
 
-// 自动加载器
+// 自动加载类
 spl_autoload_register(function ($class) {
     $classPath = str_replace('\\', '/', $class);
     $classPath = str_replace('App/', 'app/', $classPath);
     $file = APP_PATH . '/' . $classPath . '.php';
-    
     if (file_exists($file)) {
         require $file;
     }
 });
+
+// 加载辅助函数
+require APP_PATH . '/app/helpers.php';
 
 // 初始化核心组件
 use App\Core\Database;
@@ -72,8 +74,26 @@ try {
     
     // 登录处理
     $router->post('/login', function() use ($session, $db) {
+        // CSRF Token验证
+        if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+            $_SESSION['login_error'] = 'CSRF验证失败，请刷新页面重试';
+            Router::redirect(Router::url('/admin88/login'));
+            return;
+        }
+        
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
+        
+        // 检查登录失败次数（防暴力破解）
+        $failCount = $session->get('login_fail_count', 0);
+        $lastFailTime = $session->get('login_last_fail_time', 0);
+        
+        // 如果5分钟内失败超过5次，暂时锁定
+        if ($failCount >= 5 && (time() - $lastFailTime) < 300) {
+            $_SESSION['login_error'] = '登录失败次数过多，请5分钟后再试';
+            Router::redirect(Router::url('/admin88/login'));
+            return;
+        }
         
         $admin = $db->queryOne(
             "SELECT * FROM admins WHERE username = ?",
@@ -81,9 +101,17 @@ try {
         );
         
         if ($admin && password_verify($password, $admin['password'])) {
+            // 登录成功，清除失败计数
+            $session->delete('login_fail_count');
+            $session->delete('login_last_fail_time');
+            
             $session->adminLogin($admin['id'], $admin['username']);
             Router::redirect(Router::url('/admin88/'));
         } else {
+            // 登录失败，增加失败计数
+            $session->set('login_fail_count', $failCount + 1);
+            $session->set('login_last_fail_time', time());
+            
             $_SESSION['login_error'] = '用户名或密码错误';
             Router::redirect(Router::url('/admin88/login'));
         }

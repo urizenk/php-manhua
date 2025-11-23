@@ -57,15 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
             
         case 'edit':
-            $tagId = $_POST['tag_id'] ?? 0;
-            $tagName = trim($_POST['tag_name'] ?? '');
-            
-            if ($tagId && $tagName) {
-                $result = $db->update(
-                    'tags',
-                    ['tag_name' => $tagName],
-                    'id = ?',
-                    [$tagId]
+            // CSRF Token验证
+            if (!$session->verifyCsrfToken($_POST['csrf_token'] ?? '')) {
+                $message = 'CSRF验证失败，请刷新页面重试';
+                $messageType = 'danger';
+            } else {
+                $tagId = $_POST['tag_id'] ?? 0;
+                $tagName = trim($_POST['tag_name'] ?? '');
                 );
                 
                 $message = $result !== false ? '标签更新成功' : '更新失败';
