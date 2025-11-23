@@ -70,8 +70,9 @@ try {
             Router::redirect(Router::url('/admin88/'));
             exit;
         }
-        require APP_PATH . '/views/admin/login.php';
-        exit; // 确保输出后立即停止执行
+        // 使用独立登录页面，避免变量作用域问题
+        include APP_PATH . '/views/admin/login_standalone.php';
+        exit;
     });
     
     // 登录处理
