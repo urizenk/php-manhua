@@ -1,0 +1,32 @@
+# 依赖
+/vendor/
+/node_modules/
+
+# 配置文件
+/.env
+/config/config.php
+
+# 上传文件
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# 缓存和日志
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+

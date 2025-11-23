@@ -1,0 +1,27 @@
+# Apache配置文件（如果使用Apache）
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # 如果请求的不是文件或目录，重写到index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+    
+    # 后台路由
+    RewriteRule ^admin88/(.*)$ public/admin88/index.php [QSA,L]
+</IfModule>
+
+# 防止浏览.git目录
+<DirectoryMatch "\.git">
+    Order deny,allow
+    Deny from all
+</DirectoryMatch>
+
+# 防止浏览敏感文件
+<FilesMatch "\.(env|md|sql|log)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+
