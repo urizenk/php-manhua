@@ -57,21 +57,27 @@ try {
     // ==========================================
     
     // 后台首页
-    $router->get('/', function() use ($session, $db) {
+    $router->get('/', function() use ($session, $db, $config) {
         if (!$session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/login'));
+            exit;
         }
+        // 让视图文件能访问变量
+        $GLOBALS['session'] = $session;
+        $GLOBALS['db'] = $db;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/admin/dashboard.php';
+        exit;
     });
     
-    // 登录页面
+    // 登录页面 - 重定向到独立登录文件
     $router->get('/login', function() use ($session) {
         if ($session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/'));
             exit;
         }
-        // 使用独立登录页面，避免变量作用域问题
-        include APP_PATH . '/views/admin/login_standalone.php';
+        // 重定向到独立的login.php文件
+        Router::redirect(Router::url('/admin88/login.php'));
         exit;
     });
     
