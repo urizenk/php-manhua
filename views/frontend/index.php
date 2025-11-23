@@ -43,6 +43,34 @@ $customCss = '
         gap: 25px;
         margin-top: 30px;
     }
+    
+    /* 移动端双列布局 */
+    @media (max-width: 768px) {
+        .module-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .module-card {
+            padding: 25px 15px;
+        }
+        .module-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+        }
+        .module-title {
+            font-size: 1.1rem;
+        }
+        .module-desc {
+            font-size: 0.8rem;
+        }
+        .welcome-card {
+            padding: 25px 20px;
+        }
+        .welcome-title {
+            font-size: 1.8rem;
+        }
+    }
     .module-card {
         background: white;
         border-radius: 15px;
