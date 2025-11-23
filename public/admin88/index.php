@@ -68,8 +68,10 @@ try {
     $router->get('/login', function() use ($session) {
         if ($session->isAdminLoggedIn()) {
             Router::redirect(Router::url('/admin88/'));
+            exit;
         }
         require APP_PATH . '/views/admin/login.php';
+        exit; // 确保输出后立即停止执行
     });
     
     // 登录处理
