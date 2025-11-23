@@ -1,7 +1,13 @@
 <?php
 /**
- * A1-添加漫画模块
+ * A1-漫画添加模块
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '添加漫画';
 
 // 处理表单提交

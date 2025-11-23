@@ -1,7 +1,13 @@
 <?php
 /**
- * A4-访问码更新模块
+ * A4-访问码管理模块
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '访问码更新';
 
 // 处理表单提交

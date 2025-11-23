@@ -2,6 +2,12 @@
 /**
  * A2-漫画列表管理模块
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '漫画列表';
 
 // 处理批量操作
