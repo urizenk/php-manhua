@@ -44,15 +44,24 @@ class Database
     private function connect()
     {
         try {
+            // 兼容两种键名：dbname 和 database
+            $dbname = $this->config['dbname'] ?? $this->config['database'] ?? '';
+            
             $dsn = sprintf(
                 'mysql:host=%s;port=%d;dbname=%s;charset=%s',
                 $this->config['host'],
                 $this->config['port'],
-                $this->config['dbname'],
+                $dbname,
                 $this->config['charset']
             );
 
-            $this->pdo = new PDO($dsn, $this->config['username'], $this->config['password'], $this->config['options']);
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ];
+            
+            $this->pdo = new PDO($dsn, $this->config['username'], $this->config['password'], $options);
         } catch (PDOException $e) {
             $this->handleError($e);
         }
