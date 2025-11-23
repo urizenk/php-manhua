@@ -251,41 +251,13 @@ EOF
     log_success "Nginx 配置完成"
 }
 
-# 显示完成信息
-show_completion() {
-    echo ""
-    echo "=========================================="
-    log_success "部署完成！"
-    echo "=========================================="
-    echo ""
-    echo "📋 下一步操作："
-    echo ""
-    echo "1️⃣  编辑配置文件，设置数据库密码："
-    echo "   nano config/config.php"
-    echo ""
-    echo "2️⃣  导入数据库："
-    echo "   mysql -h 47.110.75.188 -u root -p manhua_db < database/schema.sql"
-    echo "   mysql -h 47.110.75.188 -u root -p manhua_db < database/test_data.sql"
-    echo ""
-    echo "3️⃣  运行测试："
-    echo "   ./run-tests.sh all"
-    echo ""
-    echo "4️⃣  访问网站："
-    echo "   前台: http://your-server-ip/"
-    echo "   后台: http://your-server-ip/admin88/login"
-    echo ""
-    echo "📝 默认账号："
-    echo "   管理员: admin / admin123"
-    echo "   访问码: 1024"
-    echo ""
-    echo "=========================================="
-}
-
+# ========================================
 # 主函数
+# ========================================
 main() {
-    echo "=========================================="
+    echo "========================================="
     echo "  PHP漫画管理系统 - Ubuntu 20.04 部署"
-    echo "=========================================="
+    echo "========================================="
     echo ""
     
     check_root
