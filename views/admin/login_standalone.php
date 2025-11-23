@@ -92,9 +92,7 @@
             </div>
             
             <?php 
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
+            // Session已经在路由入口启动，无需再次启动
             if (isset($_SESSION['login_error'])): 
             ?>
                 <div class="alert">
