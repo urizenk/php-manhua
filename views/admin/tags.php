@@ -70,10 +70,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $tagId = $_POST['tag_id'] ?? 0;
                 $tagName = trim($_POST['tag_name'] ?? '');
-                );
                 
-                $message = $result !== false ? '标签更新成功' : '更新失败';
-                $messageType = $result !== false ? 'success' : 'danger';
+                if ($tagId && $tagName) {
+                    $result = $db->update(
+                        'tags',
+                        ['tag_name' => $tagName],
+                        'id = ?',
+                        [$tagId]
+                    );
+                    
+                    $message = $result !== false ? '标签更新成功' : '更新失败';
+                    $messageType = $result !== false ? 'success' : 'danger';
+                } else {
+                    $message = '请填写完整信息';
+                    $messageType = 'danger';
+                }
             }
             break;
     }
