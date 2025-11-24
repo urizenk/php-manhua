@@ -98,90 +98,123 @@ try {
     });
     
     // 日更板块
-    $router->get('/daily', function() use ($session, $db) {
+    $router->get('/daily', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/daily.php';
     });
     
     // 韩漫合集
-    $router->get('/korean', function() use ($session, $db) {
+    $router->get('/korean', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/korean.php';
     });
     
     // 完结短漫
-    $router->get('/short', function() use ($session, $db) {
+    $router->get('/short', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/short.php';
     });
     
     // 日漫推荐
-    $router->get('/japan-recommend', function() use ($session, $db) {
+    $router->get('/japan-recommend', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/japan_recommend.php';
     });
     
     // 日漫合集
-    $router->get('/japan-collection', function() use ($session, $db) {
+    $router->get('/japan-collection', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/japan_collection.php';
     });
     
     // 动漫合集
-    $router->get('/anime', function() use ($session, $db) {
+    $router->get('/anime', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/anime.php';
     });
     
     // 广播剧合集
-    $router->get('/drama', function() use ($session, $db) {
+    $router->get('/drama', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/drama.php';
     });
     
     // 失效反馈
-    $router->get('/feedback', function() use ($session, $db) {
+    $router->get('/feedback', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/feedback.php';
     });
     
     // 防走丢
-    $router->get('/backup', function() use ($session, $db) {
+    $router->get('/backup', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/backup.php';
     });
     
     // 详情页
-    $router->get('/detail/:id', function($id) use ($session, $db) {
+    $router->get('/detail/:id', function($id) use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/detail.php';
     });
     
     // 搜索
-    $router->get('/search', function() use ($session, $db) {
+    $router->get('/search', function() use ($session, $db, $config) {
         if (!$session->isAccessVerified()) {
             Router::redirectTo('/');
         }
+        $GLOBALS['db'] = $db;
+        $GLOBALS['session'] = $session;
+        $GLOBALS['config'] = $config;
         require APP_PATH . '/views/frontend/search.php';
     });
     

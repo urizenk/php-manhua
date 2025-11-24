@@ -3,6 +3,12 @@
  * F2-日更板块模块
  * 按日期标签展示日更资源，最新在上
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '日更板块 - 海の小窝';
 
 // 获取日更板块的类型ID

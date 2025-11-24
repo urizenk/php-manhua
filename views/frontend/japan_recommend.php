@@ -3,6 +3,12 @@
  * F5-日漫推荐模块
  * 封面图片展示（18本/页）+ 分页功能
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '日漫推荐 - 海の小窝';
 
 // 获取日漫推荐的类型ID

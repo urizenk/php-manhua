@@ -3,6 +3,12 @@
  * F4-完结短漫模块
  * 字母标签（A/B/C...）→ 漫画列表 → 详情页
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '完结短漫 - 海の小窝';
 
 // 获取完结短漫的类型ID

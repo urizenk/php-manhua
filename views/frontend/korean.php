@@ -3,6 +3,12 @@
  * F3-韩漫合集模块
  * 分类标签 → 连载/完结分类 → 详情页
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '韩漫合集 - 海の小窝';
 
 // 获取韩漫合集的类型ID

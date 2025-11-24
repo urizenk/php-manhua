@@ -1,8 +1,13 @@
 <?php
 /**
- * F7-搜索模块
- * 关键词搜索功能
+ * F11-搜索页模块
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '搜索结果 - 海の小窝';
 
 // 获取搜索关键词

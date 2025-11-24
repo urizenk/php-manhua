@@ -1,5 +1,14 @@
 <?php
 /**
+ * F10-详情页模块
+ */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
+/**
  * F8-详情页模块
  * 展示漫画详细信息
  */

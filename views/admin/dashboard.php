@@ -2,6 +2,12 @@
 /**
  * 后台控制台
  */
+
+// 从 GLOBALS 获取变量
+$db = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config = $GLOBALS['config'] ?? null;
+
 $pageTitle = '控制台';
 
 include APP_PATH . '/views/admin/layout_header.php';
