@@ -1,0 +1,25 @@
+[Unit]
+Description=PHP FastCGI Process Manager for Manhua Project
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+ExecStart=/usr/local/php80/bin/php-cgi -b 127.0.0.1:9000
+ExecReload=/bin/kill -USR2 $MAINPID
+Restart=always
+RestartSec=3
+StandardOutput=null
+StandardError=syslog
+
+# 安全设置
+PrivateTmp=true
+NoNewPrivileges=true
+
+# 资源限制
+LimitNOFILE=65535
+LimitNPROC=65535
+
+[Install]
+WantedBy=multi-user.target
