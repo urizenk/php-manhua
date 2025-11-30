@@ -400,12 +400,13 @@ $(document).ready(function() {
     $(".delete-manga").click(function() {
         var id = $(this).data("id");
         if (confirm("确定要删除这个漫画吗？")) {
+            var csrfToken = $("input[name='csrf_token']").val();
             $.ajax({
                 url: "/admin88/api/delete-manga.php",
                 type: "POST",
                 data: { 
                     id: id,
-                    csrf_token: "<?php echo $session->generateCsrfToken(); ?>"
+                    csrf_token: csrfToken
                 },
                 dataType: "json",
                 success: function(res) {

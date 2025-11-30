@@ -140,3 +140,31 @@ function redirect($url) {
     header('Location: ' . $url);
     exit;
 }
+
+/**
+ * 根据漫画类型编码获取前台模块 URL
+ * 新增的类型如果没有在映射表中配置，将使用通用模块路由 /module/{code}
+ *
+ * @param string $typeCode
+ * @return string
+ */
+function module_url($typeCode)
+{
+    $map = [
+        'daily_update'      => '/daily',
+        'korean_collection' => '/korean',
+        'short_complete'    => '/short',
+        'japan_recommend'   => '/japan-recommend',
+        'japan_collection'  => '/japan-collection',
+        'anime_collection'  => '/anime',
+        'drama_collection'  => '/drama',
+        'feedback'          => '/feedback',
+        'backup_link'       => '/backup',
+    ];
+
+    if (isset($map[$typeCode])) {
+        return $map[$typeCode];
+    }
+
+    return '/module/' . urlencode($typeCode);
+}

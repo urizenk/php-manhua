@@ -262,6 +262,7 @@ include APP_PATH . '/views/admin/layout_header.php';
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <?php echo $session->csrfField(); ?>
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="tag_id" id="edit-tag-id">
                     

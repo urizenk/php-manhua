@@ -109,6 +109,14 @@ require_once APP_PATH . '/views/admin/security_headers.php';
         .table-actions button {
             margin: 0 5px;
         }
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+            }
+            .main-content {
+                padding: 20px 15px;
+            }
+        }
     </style>
     <?php echo $customCss ?? ''; ?>
 </head>
@@ -139,6 +147,13 @@ require_once APP_PATH . '/views/admin/security_headers.php';
                             <a href="/admin88/manga/add">添加漫画</a>
                             <a href="/admin88/manga/list">漫画列表</a>
                         </div>
+                    </div>
+                    
+                    <div class="menu-item">
+                        <a href="/admin88/types">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                            模块管理
+                        </a>
                     </div>
                     
                     <div class="menu-item">

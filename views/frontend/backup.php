@@ -2,7 +2,16 @@
 /**
  * F6-防走丢模块（固定内容）
  */
+
+// 全局配置（用于微博链接等）
+$db      = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config  = $GLOBALS['config'] ?? null;
+
 $pageTitle = '防走丢 - 海の小窝';
+
+$weiboUrl  = $config['app']['weibo_url']  ?? 'https://weibo.com/';
+$weiboText = $config['app']['weibo_text'] ?? '微博@资源小站';
 
 $customCss = '
 <style>
@@ -29,7 +38,7 @@ $customCss = '
         font-size: 1.1rem;
     }
     .content-card {
-        background: white;
+        background: #ffffff;
         border-radius: 15px;
         padding: 35px;
         margin-bottom: 25px;
@@ -68,7 +77,7 @@ $customCss = '
         width: 40px;
         height: 40px;
         background: #1976D2;
-        color: white;
+        color: #ffffff;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -106,7 +115,7 @@ $customCss = '
         margin: 0;
     }
     .back-btn {
-        background: white;
+        background: #ffffff;
         color: #1976D2;
         border: 2px solid #1976D2;
         border-radius: 25px;
@@ -118,7 +127,7 @@ $customCss = '
     }
     .back-btn:hover {
         background: #1976D2;
-        color: white;
+        color: #ffffff;
     }
 </style>
 ';
@@ -145,7 +154,7 @@ include APP_PATH . '/views/layouts/header.php';
             <li class="link-item">
                 <div class="link-header">
                     <div class="link-icon"><i class="bi bi-1-circle"></i></div>
-                    <span class="link-name">备用地址1</span>
+                    <span class="link-name">备用地址 1</span>
                 </div>
                 <a href="https://backup1.example.com" target="_blank" class="link-url">
                     https://backup1.example.com
@@ -154,7 +163,7 @@ include APP_PATH . '/views/layouts/header.php';
             <li class="link-item">
                 <div class="link-header">
                     <div class="link-icon"><i class="bi bi-2-circle"></i></div>
-                    <span class="link-name">备用地址2</span>
+                    <span class="link-name">备用地址 2</span>
                 </div>
                 <a href="https://backup2.example.com" target="_blank" class="link-url">
                     https://backup2.example.com
@@ -163,7 +172,7 @@ include APP_PATH . '/views/layouts/header.php';
             <li class="link-item">
                 <div class="link-header">
                     <div class="link-icon"><i class="bi bi-3-circle"></i></div>
-                    <span class="link-name">备用地址3</span>
+                    <span class="link-name">备用地址 3</span>
                 </div>
                 <a href="https://backup3.example.com" target="_blank" class="link-url">
                     https://backup3.example.com
@@ -180,8 +189,8 @@ include APP_PATH . '/views/layouts/header.php';
                     <div class="link-icon"><i class="bi bi-sina-weibo"></i></div>
                     <span class="link-name">官方微博</span>
                 </div>
-                <a href="https://weibo.com/example" target="_blank" class="link-url">
-                    @资源小站
+                <a href="<?php echo htmlspecialchars($weiboUrl); ?>" target="_blank" class="link-url">
+                    <?php echo htmlspecialchars($weiboText); ?>
                 </a>
             </li>
         </ul>
@@ -195,3 +204,4 @@ include APP_PATH . '/views/layouts/header.php';
 </div>
 
 <?php include APP_PATH . '/views/layouts/footer.php'; ?>
+

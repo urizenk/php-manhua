@@ -2,7 +2,16 @@
 /**
  * F6-失效反馈模块（固定内容）
  */
+
+// 全局配置（用于微博链接等）
+$db      = $GLOBALS['db'] ?? null;
+$session = $GLOBALS['session'] ?? null;
+$config  = $GLOBALS['config'] ?? null;
+
 $pageTitle = '失效反馈 - 海の小窝';
+
+$weiboUrl  = $config['app']['weibo_url']  ?? 'https://weibo.com/';
+$weiboText = $config['app']['weibo_text'] ?? '微博@资源小站';
 
 $customCss = '
 <style>
@@ -30,7 +39,7 @@ $customCss = '
         margin-bottom: 20px;
     }
     .content-card {
-        background: white;
+        background: #ffffff;
         border-radius: 15px;
         padding: 35px;
         margin-bottom: 25px;
@@ -65,7 +74,7 @@ $customCss = '
         width: 60px;
         height: 60px;
         background: #1976D2;
-        color: white;
+        color: #ffffff;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -113,7 +122,7 @@ $customCss = '
         line-height: 1.6;
     }
     .back-btn {
-        background: white;
+        background: #ffffff;
         color: #1976D2;
         border: 2px solid #1976D2;
         border-radius: 25px;
@@ -125,7 +134,7 @@ $customCss = '
     }
     .back-btn:hover {
         background: #1976D2;
-        color: white;
+        color: #ffffff;
     }
 </style>
 ';
@@ -160,7 +169,10 @@ include APP_PATH . '/views/layouts/header.php';
                 <div class="contact-info">
                     <div class="contact-name">新浪微博</div>
                     <div class="contact-detail">
-                        关注：<a href="https://weibo.com/example" target="_blank" class="contact-link">@资源小站</a>
+                        关注：
+                        <a href="<?php echo htmlspecialchars($weiboUrl); ?>" target="_blank" class="contact-link">
+                            <?php echo htmlspecialchars($weiboText); ?>
+                        </a>
                     </div>
                 </div>
             </li>
@@ -182,7 +194,8 @@ include APP_PATH . '/views/layouts/header.php';
                 <div class="contact-info">
                     <div class="contact-name">邮箱反馈</div>
                     <div class="contact-detail">
-                        发送至：<a href="mailto:feedback@example.com" class="contact-link">feedback@example.com</a>
+                        发送至：
+                        <a href="mailto:feedback@example.com" class="contact-link">feedback@example.com</a>
                     </div>
                 </div>
             </li>
@@ -200,7 +213,7 @@ include APP_PATH . '/views/layouts/header.php';
             <p class="text-muted">A: 密码一般在资源详情页或相关说明中提供，如未找到请联系管理员。</p>
             
             <p class="mt-3"><strong>Q: 多久会处理失效资源？</strong></p>
-            <p class="text-muted">A: 我们会在收到反馈后的24小时内检查并更新失效资源。</p>
+            <p class="text-muted">A: 我们会在收到反馈后的 24 小时内检查并更新失效资源。</p>
         </div>
     </div>
 
@@ -213,3 +226,4 @@ include APP_PATH . '/views/layouts/header.php';
 </div>
 
 <?php include APP_PATH . '/views/layouts/footer.php'; ?>
+

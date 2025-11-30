@@ -127,6 +127,8 @@ class Session
         if ($isValid) {
             $this->set('access_verified', true);
             $this->set('access_time', time());
+            // 记录当前通过验证的访问码，用于后续校验是否已被修改
+            $this->set('access_code_value', $correctCode);
         }
 
         return $isValid;
@@ -138,6 +140,16 @@ class Session
     public function isAccessVerified()
     {
         if (!$this->has('access_verified')) {
+            return false;
+        }
+
+        // 如果访问码已经被修改，则要求重新验证
+        $currentCode = $this->getAccessCode();
+        $verifiedCode = $this->get('access_code_value');
+        if (empty($verifiedCode) || $verifiedCode !== $currentCode) {
+            $this->delete('access_verified');
+            $this->delete('access_time');
+            $this->delete('access_code_value');
             return false;
         }
 
@@ -211,10 +223,10 @@ class Session
 
         try {
             $this->db->insert('access_logs', [
-                'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
-                'input_code' => $inputCode,
-                'is_valid' => $isValid ? 1 : 0,
+                'ip_address'  => $this->getClientIp(),
+                'access_code' => $inputCode,
+                'is_success'  => $isValid ? 1 : 0,
+                'user_agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
             ]);
         } catch (\Exception $e) {
             // 记录日志失败不影响主流程
@@ -310,5 +322,4 @@ class Session
         return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
     }
 }
-
 
