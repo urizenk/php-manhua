@@ -1,0 +1,136 @@
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background-color: #FFFFF0; /* 奶黄色背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* 改为 min-height */
+    margin: 0;
+    color: #333333;
+}
+
+.auth-container {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    -webkit-transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加 Webkit 前缀 */
+    -moz-transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加 Mozilla 前缀 */
+}
+
+.auth-container:hover {
+    transform: translateY(-5px);
+    -webkit-transform: translateY(-5px); /* 添加 Webkit 前缀 */
+    -moz-transform: translateY(-5px); /* 添加 Mozilla 前缀 */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+    color: #333333;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    -webkit-transition: border-color 0.3s ease; /* 添加 Webkit 前缀 */
+    -moz-transition: border-color 0.3s ease; /* 添加 Mozilla 前缀 */
+}
+
+input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+button {
+    width: 70%; /* 按钮宽度改为原来的一半 */
+    padding: 0.75rem;
+    background: #0096FF; /* 浅蓝色 */
+    background: -webkit-linear-gradient(135deg, #87CEEB, #63B8FF); /* 添加 Webkit 前缀 */
+    background: -moz-linear-gradient(135deg, #87CEEB, #63B8FF); /* 添加 Mozilla 前缀 */
+    color: #ffffff;
+    border: none;
+    border-radius: 25px; /* 圆角改为25px */
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    -webkit-transition: background 0.3s ease, transform 0.2s ease; /* 添加 Webkit 前缀 */
+    -moz-transition: background 0.3s ease, transform 0.2s ease; /* 添加 Mozilla 前缀 */
+}
+
+button:hover {
+    background: #0096FF; /* 浅蓝色 */
+    background: -webkit-linear-gradient(135deg, #63B8FF, #4AA6FF); /* 添加 Webkit 前缀 */
+    background: -moz-linear-gradient(135deg, #63B8FF, #4AA6FF); /* 添加 Mozilla 前缀 */
+    transform: scale(1.02);
+    -webkit-transform: scale(1.02); /* 添加 Webkit 前缀 */
+    -moz-transform: scale(1.02); /* 添加 Mozilla 前缀 */
+}
+
+.tutorial-link {
+    margin-top: 1rem;
+    font-size: 1.125rem;
+}
+
+.tutorial-link a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    -webkit-transition: color 0.3s ease; /* 添加 Webkit 前缀 */
+    -moz-transition: color 0.3s ease; /* 添加 Mozilla 前缀 */
+}
+
+.tutorial-link a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.access-code-label {
+    margin-top: 1.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #333333;
+}
+
+.access-code-links {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.access-code-links a {
+    display: inline-block;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #DDA0DD, #BA55D3); /* 香芋紫 */
+    background: -webkit-linear-gradient(135deg, #DDA0DD, #BA55D3); /* 添加 Webkit 前缀 */
+    background: -moz-linear-gradient(135deg, #DDA0DD, #BA55D3); /* 添加 Mozilla 前缀 */
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.3s ease, transform 0.2s ease;
+    -webkit-transition: background 0.3s ease, transform 0.2s ease; /* 添加 Webkit 前缀 */
+    -moz-transition: background 0.3s ease, transform 0.2s ease; /* 添加 Mozilla 前缀 */
+}
+
+.access-code-links a:hover {
+    
+    background: -webkit-linear-gradient(135deg, #BA55D3, #9932CC); /* 添加 Webkit 前缀 */
+    background: -moz-linear-gradient(135deg, #BA55D3, #9932CC); /* 添加 Mozilla 前缀 */
+    transform: scale(1.02);
+    -webkit-transform: scale(1.02); /* 添加 Webkit 前缀 */
+    -moz-transform: scale(1.02); /* 添加 Mozilla 前缀 */
+}

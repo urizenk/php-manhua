@@ -1,0 +1,72 @@
+/* 全局样式 */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start; /* 内容靠左 */
+    align-items: flex-start; /* 内容从顶部开始排列 */
+    min-height: 100vh; /* 确保页面高度占满整个视口 */
+    padding-top: 20px; /* 顶部留出间距 */
+    padding-left: 20px; /* 左侧留出间距 */
+}
+
+/* 容器样式 */
+.container {
+    text-align: left; /* 内容靠左 */
+    max-width: 600px; /* 限制容器宽度 */
+    width: 100%;
+}
+
+/* 页面标题样式 */
+.title {
+    background-color: #e4b1ab; /* 莫兰迪粉 */
+    color: #4a4a4a; /* 深灰色字体 */
+    font-size: 32px;
+    font-weight: bold;
+    padding: 10px 20px;
+    display: inline-block;
+    border-radius: 5px; /* 圆角矩形 */
+    margin-bottom: 20px; /* 标题与内容之间的间距 */
+}
+
+/* A 标签的标题样式（橙色背景，去掉【】） */
+.a-title {
+    display: inline-block;
+    background-color: #FFA500; /* 橙色背景 */
+    color: white; /* 白色字体 */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 15px;
+    margin-bottom: 10px; /* 设置下边距 */
+    border-radius: 5px; /* 圆角矩形 */
+}
+
+/* 超链接样式 */
+a {
+    display: block; /* 让链接独占一行 */
+    background-color: transparent; /* 透明背景 */
+    color: #0077ff; /* 蓝色字体 */
+    text-decoration: none; /* 去除下划线 */
+    padding: 8px 15px; /* 设置内边距 */
+    margin: 5px 0; /* 链接之间的行间距 */
+    font-size: 16px;
+    line-height: 1.0; /* 增加行间距 */
+    width: fit-content; /* 让链接宽度自适应内容 */
+    border: 1px solid transparent; /* 添加透明边框 */
+    box-sizing: border-box; /* 确保内边距和边框包含在元素宽度内 */
+    transition: color 0.3s ease, background-color 0.3s ease; /* 添加过渡效果 */
+}
+
+/* 鼠标悬停时的效果 */
+a:hover {
+    color: #D18E85; /* 悬停时字体变为莫兰迪粉 */
+    background-color: rgba(209, 142, 133, 0.1); /* 悬停时背景色轻微变化 */
+    border-radius: 4px; /* 添加圆角 */
+}
+
+/* 点击效果 */
+a:active {
+    background-color: #e0e0e0; /* 点击时背景色加深 */
+}

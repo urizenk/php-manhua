@@ -164,23 +164,57 @@ $customCss = '
     }
 
     /* 访问码弹窗样式 */
-    .modal-content {
-        border-radius: 20px;
-        border: none;
-        box-shadow: 0 10px 40px rgba(255, 107, 53, 0.2);
+    .access-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
     }
-    .modal-header {
-        border-bottom: none;
-        padding-bottom: 0;
+    .access-modal.show {
+        display: flex;
+    }
+    .access-modal-content {
+        width: 100%;
+        max-width: 420px;
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 18px 50px rgba(255, 107, 53, 0.35);
+        overflow: hidden;
+        animation: modalFade .25s ease;
+    }
+    @keyframes modalFade {
+        from {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .access-modal-header {
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         color: #ffffff;
-        border-radius: 20px 20px 0 0;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: bold;
     }
-    .modal-header .btn-close {
-        filter: brightness(0) invert(1);
+    .modal-close {
+        border: none;
+        background: transparent;
+        color: #ffffff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        line-height: 1;
     }
-    .modal-body {
-        padding: 26px;
+    .access-modal-body {
+        padding: 26px 26px 32px;
     }
     .access-code-input {
         font-size: 1.4rem;
@@ -217,6 +251,7 @@ $customJs = '
 $(document).ready(function() {
     var targetUrl = "";
     var isVerified = ' . ($isAccessVerified ? 'true' : 'false') . ';
+    var $accessModal = $("#accessModal");
 
     // 点击模块卡片
     $(".module-card").on("click", function() {
@@ -232,7 +267,7 @@ $(document).ready(function() {
         }
 
         // 未验证则弹出访问码输入框
-        $("#accessCodeModal").modal("show");
+        $accessModal.addClass("show");
         $("#accessCode").val("").focus();
     });
 
@@ -253,7 +288,7 @@ $(document).ready(function() {
             success: function(res) {
                 if (res && res.success) {
                     isVerified = true;
-                    $("#accessCodeModal").modal("hide");
+                    $accessModal.removeClass("show");
                     if (targetUrl) {
                         window.location.href = targetUrl;
                     }
@@ -273,6 +308,16 @@ $(document).ready(function() {
         if (e.which === 13) {
             $("#verifyBtn").click();
         }
+    });
+
+    $("#modalClose, #accessModal").on("click", function(e) {
+        if (e.target.id === "modalClose" || e.target.id === "accessModal") {
+            $accessModal.removeClass("show");
+        }
+    });
+
+    $(".access-modal-content").on("click", function(e) {
+        e.stopPropagation();
     });
 });
 </script>
@@ -319,31 +364,28 @@ include APP_PATH . '/views/layouts/header.php';
 </div>
 
 <!-- 访问码验证弹窗 -->
-<div class="modal fade" id="accessCodeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">请输入访问码</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="access-modal" id="accessModal">
+    <div class="access-modal-content">
+        <div class="access-modal-header">
+            <span>请输入访问码</span>
+            <button type="button" class="modal-close" id="modalClose">&times;</button>
+        </div>
+        <div class="access-modal-body">
+            <div class="mb-3">
+                <input type="text"
+                       class="form-control access-code-input"
+                       id="accessCode"
+                       placeholder="输入密码，不会就看下方取码教程">
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <input type="text"
-                           class="form-control access-code-input"
-                           id="accessCode"
-                           placeholder="输入密码，不会就看下方取码教程">
-                </div>
-                <div class="text-center mb-3">
-                    <button type="button" class="btn btn-primary btn-access-submit" id="verifyBtn">提交</button>
-                </div>
-                <div class="text-center">
-                    <p class="text-muted small mb-2">🎉 取码教程</p>
-                    <p class="text-muted small mb-1">关注主页即可获取每日访问码</p>
-                </div>
+            <div class="text-center mb-3">
+                <button type="button" class="btn btn-primary btn-access-submit" id="verifyBtn">提交</button>
+            </div>
+            <div class="text-center">
+                <p class="text-muted small mb-2">🎉 取码教程</p>
+                <p class="text-muted small mb-1">关注主页即可获取每日访问码</p>
             </div>
         </div>
     </div>
 </div>
 
 <?php include APP_PATH . '/views/layouts/footer.php'; ?>
-
