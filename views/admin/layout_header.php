@@ -262,6 +262,7 @@ require_once APP_PATH . '/views/admin/security_headers.php';
         }
     </style>
     <?php echo $customCss ?? ''; ?>
+    <?php include APP_PATH . '/views/admin/mobile_styles.php'; ?>
 </head>
 <body>
     <!-- 移动端菜单按钮 -->
