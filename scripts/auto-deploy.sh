@@ -15,8 +15,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 项目配置
-PROJECT_ROOT="/root/php-manhua"
-GIT_BRANCH="master"
+PROJECT_ROOT="/var/www/php-manhua"
+GIT_BRANCH="main"
 BACKUP_DIR="${PROJECT_ROOT}/backups"
 LOG_FILE="${PROJECT_ROOT}/storage/logs/deploy.log"
 

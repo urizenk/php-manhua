@@ -17,10 +17,10 @@
 define('WEBHOOK_SECRET', 'your_webhook_secret_here_change_me');
 
 // 项目根目录（绝对路径）
-define('PROJECT_ROOT', '/root/php-manhua');
+define('PROJECT_ROOT', '/var/www/php-manhua');
 
 // Git 分支
-define('GIT_BRANCH', 'master');
+define('GIT_BRANCH', 'main');
 
 // 部署日志文件
 define('DEPLOY_LOG', PROJECT_ROOT . '/storage/logs/deploy.log');
