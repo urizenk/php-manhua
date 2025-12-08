@@ -248,78 +248,118 @@ $customCss = '
 
 $customJs = '
 <script>
-$(document).ready(function() {
+(function() {
     var targetUrl = "";
     var isVerified = ' . ($isAccessVerified ? 'true' : 'false') . ';
-    var $accessModal = $("#accessModal");
+    var accessModal = document.getElementById("accessModal");
+    var modalContent = document.querySelector(".access-modal-content");
+    var accessInput = document.getElementById("accessCode");
+    var verifyBtn = document.getElementById("verifyBtn");
+    var closeBtn = document.getElementById("modalClose");
 
-    // 点击模块卡片
-    $(".module-card").on("click", function() {
-        targetUrl = $(this).data("url");
-        if (!targetUrl) {
-            return;
+    if (!accessModal || !accessInput || !verifyBtn) {
+        return;
+    }
+
+    function openModal() {
+        accessModal.classList.add("show");
+        accessInput.value = "";
+        setTimeout(function() {
+            accessInput.focus();
+        }, 50);
+    }
+
+    function closeModal() {
+        accessModal.classList.remove("show");
+    }
+
+    function postVerify(code) {
+        var payload = new URLSearchParams({ code: code }).toString();
+
+        if (window.fetch) {
+            return fetch("/verify-code", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                },
+                body: payload
+            }).then(function(resp) { return resp.json(); });
         }
 
-        // 已验证过访问码，直接跳转
-        if (isVerified) {
-            window.location.href = targetUrl;
-            return;
-        }
+        return new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/verify-code");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+            xhr.onload = function() {
+                try {
+                    resolve(JSON.parse(xhr.responseText));
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            xhr.onerror = reject;
+            xhr.send(payload);
+        });
+    }
 
-        // 未验证则弹出访问码输入框
-        $accessModal.addClass("show");
-        $("#accessCode").val("").focus();
+    document.querySelectorAll(".module-card").forEach(function(card) {
+        card.addEventListener("click", function() {
+            targetUrl = card.getAttribute("data-url") || "";
+            if (!targetUrl) {
+                return;
+            }
+
+            if (isVerified) {
+                window.location.href = targetUrl;
+                return;
+            }
+
+            openModal();
+        });
     });
 
-    // 提交访问码
-    $("#verifyBtn").on("click", function() {
-        var code = $.trim($("#accessCode").val());
-
+    verifyBtn.addEventListener("click", function() {
+        var code = accessInput.value.trim();
         if (!code) {
             alert("请输入访问码");
             return;
         }
 
-        $.ajax({
-            url: "/verify-code",
-            type: "POST",
-            data: { code: code },
-            dataType: "json",
-            success: function(res) {
-                if (res && res.success) {
-                    isVerified = true;
-                    $accessModal.removeClass("show");
-                    if (targetUrl) {
-                        window.location.href = targetUrl;
-                    }
-                } else {
-                    alert(res && res.message ? res.message : "访问码错误");
-                    $("#accessCode").val("").focus();
+        postVerify(code).then(function(res) {
+            if (res && res.success) {
+                isVerified = true;
+                closeModal();
+                if (targetUrl) {
+                    window.location.href = targetUrl;
                 }
-            },
-            error: function() {
-                alert("验证失败，请稍后重试");
+            } else {
+                alert(res && res.message ? res.message : "访问码错误");
+                accessInput.value = "";
+                accessInput.focus();
             }
+        }).catch(function() {
+            alert("验证失败，请稍后重试");
         });
     });
 
-    // 回车提交
-    $("#accessCode").on("keypress", function(e) {
-        if (e.which === 13) {
-            $("#verifyBtn").click();
+    accessInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            verifyBtn.click();
         }
     });
 
-    $("#modalClose, #accessModal").on("click", function(e) {
-        if (e.target.id === "modalClose" || e.target.id === "accessModal") {
-            $accessModal.removeClass("show");
+    closeBtn.addEventListener("click", closeModal);
+    accessModal.addEventListener("click", function(e) {
+        if (e.target === accessModal) {
+            closeModal();
         }
     });
-
-    $(".access-modal-content").on("click", function(e) {
-        e.stopPropagation();
-    });
-});
+    if (modalContent) {
+        modalContent.addEventListener("click", function(e) {
+            e.stopPropagation();
+        });
+    }
+})();
 </script>
 ';
 

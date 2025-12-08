@@ -29,4 +29,8 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
+# CI/CD
+/backups/*
+!/backups/.gitkeep
+/storage/logs/deploy.log
 
