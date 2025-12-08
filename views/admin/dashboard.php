@@ -28,8 +28,14 @@ $currentAccessCode = $session->getAccessCode();
     </nav>
 </div>
 
-<!-- 统计卡片 - 紧凑布局 -->
-<div class="row mb-4">
+<!-- ========== 功能导航区域 ========== -->
+<div class="card mb-4">
+    <div class="card-header bg-gradient">
+        <h5 class="mb-0 text-white"><i class="bi bi-grid-3x3-gap"></i> 功能导航</h5>
+    </div>
+    <div class="card-body p-3">
+        <!-- 统计卡片 - 紧凑布局 -->
+        <div class="row mb-3">
     <div class="col-md-3 col-6 mb-3">
         <div class="card stat-card">
             <div class="card-body d-flex align-items-center p-3">
@@ -144,37 +150,40 @@ $currentAccessCode = $session->getAccessCode();
         font-size: 0.7rem;
     }
 }
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
 </style>
 
-<!-- 快捷操作 -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">快捷操作</h5>
-    </div>
-    <div class="card-body">
+        <!-- 快捷操作按钮 -->
         <div class="row">
-            <div class="col-md-3 mb-3">
-                <a href="/admin88/manga/add" class="btn btn-primary btn-custom w-100">
+            <div class="col-md-2 col-6 mb-2">
+                <a href="/admin88/manga/add" class="btn btn-primary btn-sm w-100">
                     <i class="bi bi-plus-circle"></i> 添加漫画
                 </a>
             </div>
-            <div class="col-md-3 mb-3">
-                <a href="/admin88/manga/list" class="btn btn-info btn-custom w-100">
+            <div class="col-md-2 col-6 mb-2">
+                <a href="/admin88/manga/list" class="btn btn-info btn-sm w-100">
                     <i class="bi bi-list"></i> 漫画列表
                 </a>
             </div>
-            <div class="col-md-3 mb-3">
-                <a href="/admin88/tags" class="btn btn-success btn-custom w-100">
+            <div class="col-md-2 col-6 mb-2">
+                <a href="/admin88/tags" class="btn btn-success btn-sm w-100">
                     <i class="bi bi-tags"></i> 标签管理
                 </a>
             </div>
-            <div class="col-md-3 mb-3">
-                <a href="/admin88/access-code" class="btn btn-warning btn-custom w-100">
+            <div class="col-md-2 col-6 mb-2">
+                <a href="/admin88/types" class="btn btn-dark btn-sm w-100">
+                    <i class="bi bi-grid-3x3-gap"></i> 模块管理
+                </a>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+                <a href="/admin88/access-code" class="btn btn-warning btn-sm w-100">
                     <i class="bi bi-key"></i> 更新访问码
                 </a>
             </div>
-            <div class="col-md-3 mb-3">
-                <a href="/admin88/site-config" class="btn btn-secondary btn-custom w-100">
+            <div class="col-md-2 col-6 mb-2">
+                <a href="/admin88/site-config" class="btn btn-secondary btn-sm w-100">
                     <i class="bi bi-gear-fill"></i> 网站配置
                 </a>
             </div>
@@ -182,10 +191,11 @@ $currentAccessCode = $session->getAccessCode();
     </div>
 </div>
 
-<!-- 最近添加 -->
-<div class="card mt-4">
+<!-- ========== 内容展示区域 ========== -->
+<!-- 最近添加的漫画 -->
+<div class="card">
     <div class="card-header">
-        <h5 class="mb-0">最近添加的漫画</h5>
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> 最近添加的漫画</h5>
     </div>
     <div class="card-body">
         <?php
