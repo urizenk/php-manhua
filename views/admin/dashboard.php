@@ -94,8 +94,13 @@ $currentAccessCode = $session->getAccessCode();
                 </a>
             </div>
             <div class="col-md-3 mb-3">
-                <a href="/admin88/access-code" class="btn" style="background: #1976D2;" class="btn-custom w-100">
+                <a href="/admin88/access-code" class="btn btn-warning btn-custom w-100">
                     <i class="bi bi-key"></i> 更新访问码
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="/admin88/site-config" class="btn btn-secondary btn-custom w-100">
+                    <i class="bi bi-gear-fill"></i> 网站配置
                 </a>
             </div>
         </div>

@@ -8,10 +8,16 @@ $db      = $GLOBALS['db'] ?? null;
 $session = $GLOBALS['session'] ?? null;
 $config  = $GLOBALS['config'] ?? null;
 
-$pageTitle = '失效反馈 - 海の小窝';
+$pageTitle = '资源失效反馈';
 
-$weiboUrl  = $config['app']['weibo_url']  ?? 'https://weibo.com/';
-$weiboText = $config['app']['weibo_text'] ?? '微博@资源小站';
+// 从数据库读取微博配置
+$weiboConfig = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text')");
+$weiboSettings = [];
+foreach ($weiboConfig as $row) {
+    $weiboSettings[$row['config_key']] = $row['config_value'];
+}
+$weiboUrl  = $weiboSettings['weibo_url'] ?? 'https://weibo.com/';
+$weiboText = $weiboSettings['weibo_text'] ?? '微博@资源小站';
 
 $customCss = '
 <style>

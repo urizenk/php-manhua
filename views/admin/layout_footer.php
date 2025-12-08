@@ -21,6 +21,26 @@
                     $(this).parents('.submenu').show();
                 }
             });
+            
+            // 移动端菜单切换
+            $('#mobileMenuToggle').click(function() {
+                $('#sidebar').toggleClass('show');
+                $('#sidebarOverlay').toggleClass('show');
+            });
+            
+            // 点击遮罩层关闭菜单
+            $('#sidebarOverlay').click(function() {
+                $('#sidebar').removeClass('show');
+                $('#sidebarOverlay').removeClass('show');
+            });
+            
+            // 点击菜单项后关闭菜单（移动端）
+            $('.sidebar-menu a').click(function() {
+                if (window.innerWidth <= 768) {
+                    $('#sidebar').removeClass('show');
+                    $('#sidebarOverlay').removeClass('show');
+                }
+            });
         });
     </script>
     <?php echo $customJs ?? ''; ?>

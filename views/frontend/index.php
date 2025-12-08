@@ -11,9 +11,14 @@ $config  = $GLOBALS['config'] ?? null;
 
 $pageTitle = '欢迎来到海の小窝 🐋';
 
-// 微博配置（可在 config/config.php 中修改）
-$weiboUrl  = $config['app']['weibo_url']  ?? '#';
-$weiboText = $config['app']['weibo_text'] ?? '微博@资源小站';
+// 从数据库读取微博配置
+$weiboConfig = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text')");
+$weiboSettings = [];
+foreach ($weiboConfig as $row) {
+    $weiboSettings[$row['config_key']] = $row['config_value'];
+}
+$weiboUrl  = $weiboSettings['weibo_url'] ?? '#';
+$weiboText = $weiboSettings['weibo_text'] ?? '微博@资源小站';
 
 // 模块类型列表，用于动态渲染首页模块
 $types = $db ? $db->query('SELECT * FROM manga_types ORDER BY sort_order, id') : [];

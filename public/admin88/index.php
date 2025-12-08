@@ -176,6 +176,14 @@ try {
         exit;
     });
 
+    // 网站配置管理
+    $router->any('/site-config', function () use ($requireLogin, $withGlobals) {
+        $requireLogin();
+        $withGlobals();
+        require APP_PATH . '/views/admin/site_config.php';
+        exit;
+    });
+
     // 模块/类型管理页面（用于管理首页模块）
     $router->any('/types', function () use ($requireLogin, $withGlobals) {
         $requireLogin();
