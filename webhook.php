@@ -17,7 +17,7 @@
 define('WEBHOOK_SECRET', 'your_webhook_secret_here_change_me');
 
 // 项目根目录（绝对路径）
-define('PROJECT_ROOT', '/www/wwwroot/php-manhua');
+define('PROJECT_ROOT', '/root/php-manhua');
 
 // Git 分支
 define('GIT_BRANCH', 'master');
