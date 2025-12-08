@@ -10,6 +10,10 @@ $config = $GLOBALS['config'] ?? null;
 
 $pageTitle = '漫画列表';
 
+// 初始化消息变量
+$message = '';
+$messageType = '';
+
 // 处理批量操作
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['batch_action'])) {
     // CSRF Token验证

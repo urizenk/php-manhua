@@ -201,7 +201,8 @@ include APP_PATH . '/views/admin/layout_header.php';
         <?php if (empty($types)): ?>
             <p class="text-muted mb-0">当前尚未配置任何模块。</p>
         <?php else: ?>
-            <div class="table-responsive">
+            <!-- 桌面端表格视图 -->
+            <div class="table-responsive d-none d-md-block">
                 <table class="table table-bordered align-middle">
                     <thead class="table-light">
                         <tr>
@@ -267,9 +268,123 @@ include APP_PATH . '/views/admin/layout_header.php';
                     </tbody>
                 </table>
             </div>
+
+            <!-- 移动端卡片视图 -->
+            <div class="d-md-none">
+                <?php foreach ($types as $type): ?>
+                    <div class="mobile-card mb-3">
+                        <form method="POST">
+                            <?php echo $session->csrfField(); ?>
+                            <input type="hidden" name="action" value="update">
+                            <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
+                            
+                            <div class="mobile-card-header">
+                                <span class="badge bg-secondary">ID: <?php echo (int)$type['id']; ?></span>
+                            </div>
+                            
+                            <div class="mobile-card-body">
+                                <div class="mb-2">
+                                    <label class="mobile-label">模块名称</label>
+                                    <input type="text" name="type_name" class="form-control form-control-sm"
+                                           value="<?php echo htmlspecialchars($type['type_name']); ?>">
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label class="mobile-label">类型代码</label>
+                                    <input type="text" name="type_code" class="form-control form-control-sm"
+                                           value="<?php echo htmlspecialchars($type['type_code']); ?>">
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label class="mobile-label">排序</label>
+                                    <input type="number" name="sort_order" class="form-control form-control-sm"
+                                           value="<?php echo (int)$type['sort_order']; ?>">
+                                </div>
+                                
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="need_cover"
+                                                   id="mobile_cover_<?php echo $type['id']; ?>"
+                                                   <?php echo $type['need_cover'] ? 'checked' : ''; ?>>
+                                            <label class="form-check-label mobile-label" for="mobile_cover_<?php echo $type['id']; ?>">
+                                                需要封面
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="need_status"
+                                                   id="mobile_status_<?php echo $type['id']; ?>"
+                                                   <?php echo $type['need_status'] ? 'checked' : ''; ?>>
+                                            <label class="form-check-label mobile-label" for="mobile_status_<?php echo $type['id']; ?>">
+                                                需要状态
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mobile-card-footer">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-save"></i> 保存
+                                </button>
+                        </form>
+                        
+                        <form method="POST" style="display:inline;"
+                              onsubmit="return confirm('确定删除该模块？');">
+                            <?php echo $session->csrfField(); ?>
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> 删除
+                            </button>
+                        </form>
+                            </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
+        
+        <style>
+        /* 移动端卡片样式 */
+        .mobile-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .mobile-card-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .mobile-card-body {
+            padding: 15px;
+        }
+        .mobile-card-footer {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            gap: 8px;
+        }
+        .mobile-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .mobile-card .form-control-sm {
+            font-size: 0.85rem;
+        }
+        .mobile-card .btn-sm {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+        </style>
     </div>
 </div>
 
 <?php include APP_PATH . '/views/admin/layout_footer.php'; ?>
-
