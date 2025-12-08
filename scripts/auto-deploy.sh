@@ -49,13 +49,16 @@ create_backup() {
     BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
     
     # 创建备份（排除不必要的目录）
+    # 先切换到项目目录外，避免tar包含自身
+    cd "$(dirname ${PROJECT_ROOT})"
     tar -czf "${BACKUP_PATH}" \
-        --exclude="${PROJECT_ROOT}/.git" \
-        --exclude="${PROJECT_ROOT}/storage/logs" \
-        --exclude="${PROJECT_ROOT}/storage/cache" \
-        --exclude="${PROJECT_ROOT}/backups" \
-        --exclude="${PROJECT_ROOT}/node_modules" \
-        -C "${PROJECT_ROOT}" .
+        --exclude="$(basename ${PROJECT_ROOT})/.git" \
+        --exclude="$(basename ${PROJECT_ROOT})/storage/logs" \
+        --exclude="$(basename ${PROJECT_ROOT})/storage/cache" \
+        --exclude="$(basename ${PROJECT_ROOT})/backups" \
+        --exclude="$(basename ${PROJECT_ROOT})/node_modules" \
+        "$(basename ${PROJECT_ROOT})"
+    cd "${PROJECT_ROOT}"
     
     if [ $? -eq 0 ]; then
         log_success "备份创建成功: ${BACKUP_NAME}"
