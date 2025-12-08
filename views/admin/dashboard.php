@@ -28,48 +28,123 @@ $currentAccessCode = $session->getAccessCode();
     </nav>
 </div>
 
-<!-- 统计卡片 -->
+<!-- 统计卡片 - 紧凑布局 -->
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="bi bi-book" style="font-size: 3rem; color: #667eea;"></i>
-                <h3 class="mt-3"><?php echo $totalMangas['count'] ?? 0; ?></h3>
-                <p class="text-muted">漫画总数</p>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center p-3">
+                <div class="stat-icon me-3">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 class="mb-0"><?php echo $totalMangas['count'] ?? 0; ?></h4>
+                    <small class="text-muted">漫画总数</small>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="bi bi-tags" style="font-size: 3rem; color: #3498db;"></i>
-                <h3 class="mt-3"><?php echo $totalTags['count'] ?? 0; ?></h3>
-                <p class="text-muted">标签数量</p>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center p-3">
+                <div class="stat-icon me-3 bg-info">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 class="mb-0"><?php echo $totalTags['count'] ?? 0; ?></h4>
+                    <small class="text-muted">标签数量</small>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="bi bi-clock-history" style="font-size: 3rem; color: #2ecc71;"></i>
-                <h3 class="mt-3"><?php echo $todayMangas['count'] ?? 0; ?></h3>
-                <p class="text-muted">今日新增</p>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center p-3">
+                <div class="stat-icon me-3 bg-success">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 class="mb-0"><?php echo $todayMangas['count'] ?? 0; ?></h4>
+                    <small class="text-muted">今日新增</small>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body">
-                <i class="bi bi-key" style="font-size: 3rem; color: #e74c3c;"></i>
-                <h3 class="mt-3"><?php echo $currentAccessCode; ?></h3>
-                <p class="text-muted">当前访问码</p>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center p-3">
+                <div class="stat-icon me-3 bg-danger">
+                    <i class="bi bi-key"></i>
+                </div>
+                <div class="stat-info">
+                    <h4 class="mb-0"><?php echo $currentAccessCode; ?></h4>
+                    <small class="text-muted">当前访问码</small>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 10px;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.stat-icon.bg-info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+.stat-icon.bg-success {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+.stat-icon.bg-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+.stat-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+.stat-info h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+.stat-info small {
+    font-size: 0.8rem;
+    display: block;
+}
+@media (max-width: 768px) {
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+    }
+    .stat-icon i {
+        font-size: 1.2rem;
+    }
+    .stat-info h4 {
+        font-size: 1.2rem;
+    }
+    .stat-info small {
+        font-size: 0.7rem;
+    }
+}
+</style>
 
 <!-- 快捷操作 -->
 <div class="card">
