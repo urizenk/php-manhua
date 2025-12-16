@@ -228,11 +228,11 @@ include APP_PATH . '/views/admin/layout_header.php';
             </div>
 
             <!-- 封面图片 -->
-            <div class="form-section" id="coverSection" style="display:none;">
+            <div class="form-section" id="coverSection">
                 <div class="form-section-title"><i class="bi bi-image"></i> 封面图片</div>
 
                 <div class="mb-3">
-                    <label class="form-label">上传封面</label>
+                    <label class="form-label">上传封面（可选）</label>
                     <input type="file" class="form-control" name="cover_image" accept="image/*">
                     <small class="text-muted">支持 JPG、PNG、WEBP 格式，最大 5MB</small>
                 </div>
