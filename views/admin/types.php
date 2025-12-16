@@ -317,15 +317,9 @@ include APP_PATH . '/views/admin/layout_header.php';
                     </div>
                 </div>
             </div>
-            <div class="col-md-1">
+            <div class="col-md-2">
                 <label class="form-label">排序</label>
                 <input type="number" name="sort_order" class="form-control" value="0">
-            </div>
-            <div class="col-md-1 d-flex align-items-center">
-                <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" name="need_cover" id="addNeedCover">
-                    <label class="form-check-label" for="addNeedCover">封面</label>
-                </div>
             </div>
             <div class="col-md-1 d-flex align-items-center">
                 <div class="form-check mt-3">
@@ -361,7 +355,6 @@ include APP_PATH . '/views/admin/layout_header.php';
                             <th>模块名称</th>
                             <th>类型代码</th>
                             <th width="80">排序</th>
-                            <th width="60">封面</th>
                             <th width="60">状态</th>
                             <th width="160">操作</th>
                         </tr>
@@ -405,12 +398,6 @@ include APP_PATH . '/views/admin/layout_header.php';
                                 <td>
                                         <input type="number" name="sort_order" class="form-control form-control-sm"
                                                value="<?php echo (int)$type['sort_order']; ?>">
-                                </td>
-                                <td class="text-center">
-                                        <div class="form-check d-flex justify-content-center">
-                                            <input class="form-check-input" type="checkbox" name="need_cover"
-                                                   <?php echo $type['need_cover'] ? 'checked' : ''; ?>>
-                                        </div>
                                 </td>
                                 <td class="text-center">
                                         <div class="form-check d-flex justify-content-center">
@@ -476,26 +463,14 @@ include APP_PATH . '/views/admin/layout_header.php';
                                            value="<?php echo (int)$type['sort_order']; ?>">
                                 </div>
                                 
-                                <div class="row mb-2">
-                                    <div class="col-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="need_cover"
-                                                   id="mobile_cover_<?php echo $type['id']; ?>"
-                                                   <?php echo $type['need_cover'] ? 'checked' : ''; ?>>
-                                            <label class="form-check-label mobile-label" for="mobile_cover_<?php echo $type['id']; ?>">
-                                                需要封面
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="need_status"
-                                                   id="mobile_status_<?php echo $type['id']; ?>"
-                                                   <?php echo $type['need_status'] ? 'checked' : ''; ?>>
-                                            <label class="form-check-label mobile-label" for="mobile_status_<?php echo $type['id']; ?>">
-                                                需要状态
-                                            </label>
-                                        </div>
+                                <div class="mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="need_status"
+                                               id="mobile_status_<?php echo $type['id']; ?>"
+                                               <?php echo $type['need_status'] ? 'checked' : ''; ?>>
+                                        <label class="form-check-label mobile-label" for="mobile_status_<?php echo $type['id']; ?>">
+                                            需要状态（连载中/已完结）
+                                        </label>
                                     </div>
                                 </div>
                             </div>
