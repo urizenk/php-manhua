@@ -288,17 +288,9 @@ $(document).ready(function() {
     // 类型选择变化
     $("#typeSelect").change(function() {
         var typeId = $(this).val();
-        var needCover = $(this).find(":selected").data("need-cover");
         var needStatus = $(this).find(":selected").data("need-status");
 
-        // 显示/隐藏封面上传
-        if (needCover == 1) {
-            $("#coverSection").show();
-        } else {
-            $("#coverSection").hide();
-        }
-
-        // 显示/隐藏状态选择
+        // 显示/隐藏状态选择（连载中/已完结）
         if (needStatus == 1) {
             $("#statusSection").show();
         } else {
