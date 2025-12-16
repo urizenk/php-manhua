@@ -1,7 +1,7 @@
 <?php
 /**
  * F3-韩漫合集模块
- * 分类标签 → 连载/完结分类 → 详情页
+ * 按板块标签分类显示漫画列表
  */
 
 // 从 GLOBALS 获取变量
@@ -21,6 +21,12 @@ if (!$koreanType) {
 // 获取搜索关键词
 $keyword = $_GET['keyword'] ?? '';
 
+// 获取该板块下的所有标签（按排序）
+$tags = $db->query(
+    "SELECT * FROM tags WHERE type_id = ? ORDER BY sort_order, id",
+    [$koreanType['id']]
+);
+
 // 构建查询条件
 $where = "m.type_id = ?";
 $params = [$koreanType['id']];
@@ -37,47 +43,46 @@ $mangas = $db->query(
      FROM mangas m 
      LEFT JOIN tags t ON m.tag_id = t.id 
      WHERE {$where}
-     ORDER BY m.created_at DESC, m.sort_order DESC",
+     ORDER BY m.sort_order DESC, m.created_at DESC",
     $params
 );
 
-// 按状态和字母分组
-$groupedMangas = [
-    'new' => [],           // 新推漫（无状态的）
-    'serializing' => [],   // 连载中
-    'completed' => [],     // 已完结
-    'by_letter' => []      // 按字母分组
-];
+// 按标签分组
+$groupedMangas = [];
+$untaggedMangas = [];
 
 foreach ($mangas as $manga) {
-    // 按状态分组
-    if ($manga['status'] === 'serializing') {
-        $groupedMangas['serializing'][] = $manga;
-    } elseif ($manga['status'] === 'completed') {
-        $groupedMangas['completed'][] = $manga;
-    } else {
-        $groupedMangas['new'][] = $manga;
-    }
+    $tagId = $manga['tag_id'] ?? 0;
+    $tagName = $manga['tag_name'] ?? '';
     
-    // 按字母分组
-    $firstChar = mb_substr($manga['title'], 0, 1);
-    if (preg_match('/[A-Za-z]/', $firstChar)) {
-        $letter = strtoupper($firstChar);
-        if (!isset($groupedMangas['by_letter'][$letter])) {
-            $groupedMangas['by_letter'][$letter] = ['serializing' => [], 'completed' => []];
+    if ($tagId && $tagName) {
+        if (!isset($groupedMangas[$tagId])) {
+            $groupedMangas[$tagId] = [
+                'tag_name' => $tagName,
+                'mangas' => []
+            ];
         }
-        if ($manga['status'] === 'serializing') {
-            $groupedMangas['by_letter'][$letter]['serializing'][] = $manga;
-        } else {
-            $groupedMangas['by_letter'][$letter]['completed'][] = $manga;
-        }
+        $groupedMangas[$tagId]['mangas'][] = $manga;
+    } else {
+        $untaggedMangas[] = $manga;
     }
 }
 
-// 对字母分组进行排序
-if (!empty($groupedMangas['by_letter'])) {
-    ksort($groupedMangas['by_letter']);
+// 按标签排序重新整理分组顺序
+$sortedGroups = [];
+foreach ($tags as $tag) {
+    if (isset($groupedMangas[$tag['id']])) {
+        $sortedGroups[$tag['id']] = $groupedMangas[$tag['id']];
+    }
 }
+// 添加未分类的
+if (!empty($untaggedMangas)) {
+    $sortedGroups[0] = [
+        'tag_name' => '未分类',
+        'mangas' => $untaggedMangas
+    ];
+}
+$groupedMangas = $sortedGroups;
 
 $customCss = '
 <style>
@@ -155,31 +160,18 @@ $customCss = '
     .search-btn:hover {
         background: #e0a800;
     }
-    .new-manga-badge {
+    .tag-badge {
         display: inline-block;
         background: #ffc107;
         color: #333;
         padding: 6px 18px;
         border-radius: 15px;
-        font-weight: 500;
-        font-size: 0.85rem;
-        margin-bottom: 15px;
-    }
-    .letter-badge {
-        display: inline-block;
-        background: linear-gradient(135deg, #FFA500, #FF8C00);
-        color: white;
-        padding: 6px 18px;
-        border-radius: 8px;
         font-weight: bold;
-        font-size: 1rem;
-        margin-bottom: 10px;
-    }
-    .section-title {
-        font-weight: bold;
-        color: #333;
+        font-size: 0.9rem;
         margin: 20px 0 10px 0;
-        font-size: 1rem;
+    }
+    .tag-badge:first-of-type {
+        margin-top: 0;
     }
     .manga-list {
         list-style: none;
@@ -258,9 +250,6 @@ include APP_PATH . '/views/layouts/header.php';
                    value="<?php echo htmlspecialchars($keyword); ?>">
             <button type="submit" class="search-btn">查看</button>
         </form>
-        
-        <!-- 新推漫按钮 -->
-        <span class="new-manga-badge">新推漫</span>
     </div>
 
     <!-- 漫画列表 -->
@@ -271,10 +260,11 @@ include APP_PATH . '/views/layouts/header.php';
         </div>
     <?php else: ?>
         
-        <!-- 新推漫区域 -->
-        <?php if (!empty($groupedMangas['new'])): ?>
+        <!-- 按标签分组显示 -->
+        <?php foreach ($groupedMangas as $tagId => $group): ?>
+            <div class="tag-badge"><?php echo htmlspecialchars($group['tag_name']); ?></div>
             <ul class="manga-list">
-                <?php foreach ($groupedMangas['new'] as $manga): ?>
+                <?php foreach ($group['mangas'] as $manga): ?>
                     <li class="manga-item">
                         <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
                             <?php echo htmlspecialchars($manga['title']); ?>
@@ -282,78 +272,7 @@ include APP_PATH . '/views/layouts/header.php';
                     </li>
                 <?php endforeach; ?>
             </ul>
-        <?php endif; ?>
-        
-        <!-- 按字母分组区域 -->
-        <?php foreach ($groupedMangas['by_letter'] as $letter => $letterMangas): ?>
-            <div class="letter-badge"><?php echo $letter; ?></div>
-            
-            <?php if (!empty($letterMangas['serializing'])): ?>
-                <div class="section-title">连载中</div>
-                <ul class="manga-list">
-                    <?php foreach ($letterMangas['serializing'] as $manga): ?>
-                        <li class="manga-item">
-                            <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
-                                <?php echo htmlspecialchars($manga['title']); ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
-            
-            <?php if (!empty($letterMangas['completed'])): ?>
-                <div class="section-title">完结</div>
-                <ul class="manga-list">
-                    <?php foreach ($letterMangas['completed'] as $manga): ?>
-                        <li class="manga-item">
-                            <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
-                                <?php echo htmlspecialchars($manga['title']); ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
         <?php endforeach; ?>
-        
-        <!-- 非字母开头的连载中 -->
-        <?php 
-        $nonLetterSerializing = array_filter($groupedMangas['serializing'], function($m) {
-            $firstChar = mb_substr($m['title'], 0, 1);
-            return !preg_match('/[A-Za-z]/', $firstChar);
-        });
-        if (!empty($nonLetterSerializing)): 
-        ?>
-            <div class="section-title">连载中</div>
-            <ul class="manga-list">
-                <?php foreach ($nonLetterSerializing as $manga): ?>
-                    <li class="manga-item">
-                        <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
-                            <?php echo htmlspecialchars($manga['title']); ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-        
-        <!-- 非字母开头的已完结 -->
-        <?php 
-        $nonLetterCompleted = array_filter($groupedMangas['completed'], function($m) {
-            $firstChar = mb_substr($m['title'], 0, 1);
-            return !preg_match('/[A-Za-z]/', $firstChar);
-        });
-        if (!empty($nonLetterCompleted)): 
-        ?>
-            <div class="section-title">完结</div>
-            <ul class="manga-list">
-                <?php foreach ($nonLetterCompleted as $manga): ?>
-                    <li class="manga-item">
-                        <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
-                            <?php echo htmlspecialchars($manga['title']); ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
         
     <?php endif; ?>
 
