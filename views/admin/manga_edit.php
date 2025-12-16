@@ -279,21 +279,17 @@ include APP_PATH . '/views/admin/layout_header.php';
             <div class="form-section">
                 <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源信息</div>
                 
-                <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label">资源链接</label>
-                        <input type="text" class="form-control" name="resource_link" 
-                               value="<?php echo htmlspecialchars($manga['resource_link']); ?>"
-                               placeholder="https://pan.baidu.com/...">
-                        <small class="text-muted">网盘链接或其他资源地址</small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">提取码</label>
-                        <input type="text" class="form-control" name="extract_code" 
-                               value="<?php echo htmlspecialchars($manga['extract_code'] ?? ''); ?>"
-                               placeholder="如：1234">
-                        <small class="text-muted">网盘提取码（可选）</small>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">资源链接</label>
+                    <textarea class="form-control" name="resource_link" rows="4" placeholder="输入资源链接，多个链接请换行输入"><?php echo htmlspecialchars($manga['resource_link']); ?></textarea>
+                    <small class="text-muted">如百度网盘、阿里云盘等分享链接，多个链接请换行输入</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">提取码</label>
+                    <input type="text" class="form-control" name="extract_code" 
+                           value="<?php echo htmlspecialchars($manga['extract_code'] ?? ''); ?>"
+                           placeholder="如：1234（多个提取码用空格或逗号分隔）">
+                    <small class="text-muted">网盘提取码（可选）</small>
                 </div>
             </div>
             
