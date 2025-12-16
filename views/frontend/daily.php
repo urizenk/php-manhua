@@ -89,91 +89,91 @@ $groupedMangas = $sortedGroups;
 $customCss = '
 <style>
     body {
-        background: #FFF8DC;
+        font-family: Arial, sans-serif;
+        background-color: #FFFFF0;
+        margin: 0;
+        padding: 20px;
+        color: #333;
         min-height: 100vh;
     }
     .content-wrapper {
         max-width: 800px;
         margin: 0 auto;
-        padding: 20px 15px;
-    }
-    .page-header {
-        margin-bottom: 20px;
     }
     .page-title {
-        font-size: 1.5rem;
+        color: #1B1212;
+        font-size: 2rem;
         font-weight: bold;
-        color: #333;
-        margin-bottom: 15px;
+        padding: 10px 0;
+        margin-bottom: 20px;
     }
     .tip-box {
-        background: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 10px 12px;
-        margin-bottom: 15px;
-        border-radius: 0 8px 8px 0;
-        font-size: 0.85rem;
-        color: #856404;
+        background-color: #FFE4B5;
+        padding: 10px 15px;
+        border-radius: 25px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        color: #333;
+        display: inline-block;
     }
     .back-btn {
-        display: inline-block;
-        background: #FF6B35;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #EC5800;
         color: white;
-        padding: 8px 20px;
-        border-radius: 20px;
+        padding: 10px 18px;
+        border-radius: 5px;
         text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        margin-bottom: 15px;
-        transition: all 0.3s ease;
+        font-size: 1rem;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+        margin-bottom: 20px;
     }
     .back-btn:hover {
-        background: #e55a28;
+        background-color: #d14e00;
         color: white;
-        transform: translateY(-2px);
     }
     .search-box {
         display: flex;
-        gap: 8px;
-        margin-bottom: 15px;
+        gap: 10px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
     }
     .search-input {
         flex: 1;
+        min-width: 200px;
         padding: 10px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 20px;
-        font-size: 0.9rem;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
         outline: none;
-        background: white;
     }
     .search-input:focus {
-        border-color: #FF6B35;
+        border-color: #FFA500;
     }
     .search-btn {
         padding: 10px 25px;
-        background: #ffc107;
-        color: #333;
+        background-color: #FFA500;
+        color: white;
         border: none;
-        border-radius: 20px;
-        font-weight: 500;
+        border-radius: 5px;
+        font-weight: bold;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background-color 0.3s ease;
     }
     .search-btn:hover {
-        background: #e0a800;
+        background-color: #e69500;
     }
     .tag-badge {
         display: inline-block;
-        background: #ffc107;
-        color: #333;
-        padding: 6px 18px;
-        border-radius: 15px;
+        background-color: #FFA500;
+        color: white;
+        font-size: 1rem;
         font-weight: bold;
-        font-size: 0.9rem;
-        margin: 20px 0 10px 0;
-    }
-    .tag-badge:first-of-type {
-        margin-top: 0;
+        padding: 8px 15px;
+        margin: 15px 0 10px 0;
+        border-radius: 5px;
     }
     .manga-list {
         list-style: none;
@@ -181,21 +181,27 @@ $customCss = '
         margin: 0 0 20px 0;
     }
     .manga-item {
-        padding: 10px 0;
-        border-bottom: 1px solid #e8e8e8;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
     }
     .manga-item:last-child {
         border-bottom: none;
     }
     .manga-link {
+        color: #0077ff;
         text-decoration: none;
-        color: #2196F3;
-        font-size: 0.95rem;
-        transition: color 0.2s ease;
+        font-weight: bold;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
     .manga-link:hover {
-        color: #1565C0;
         text-decoration: underline;
+    }
+    .manga-link::before {
+        content: "🔗";
+        font-size: 0.9rem;
     }
     .empty-state {
         text-align: center;
@@ -204,22 +210,23 @@ $customCss = '
     }
     .bottom-back {
         text-align: center;
-        margin-top: 30px;
-        padding-bottom: 20px;
+        margin-top: 40px;
+        padding-bottom: 30px;
     }
     .bottom-back-btn {
-        display: inline-block;
-        background: white;
-        color: #FF6B35;
-        border: 2px solid #FF6B35;
-        padding: 10px 30px;
-        border-radius: 25px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #EC5800;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 5px;
         text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
     }
     .bottom-back-btn:hover {
-        background: #FF6B35;
+        background-color: #d14e00;
         color: white;
     }
 </style>
