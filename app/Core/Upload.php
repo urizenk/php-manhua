@@ -151,10 +151,16 @@ class Upload
      */
     private function createThumbnail($sourcePath, $savePath, $originalFilename)
     {
+        // 检查GD扩展是否可用
+        if (!extension_loaded('gd') || !function_exists('imagecreatefromjpeg')) {
+            // GD扩展不可用，返回空字符串（不生成缩略图）
+            return '';
+        }
+
         $thumbFilename = 'thumb_' . $originalFilename;
         $thumbPath = $savePath . $thumbFilename;
 
-        $imageInfo = getimagesize($sourcePath);
+        $imageInfo = @getimagesize($sourcePath);
         if (!$imageInfo) {
             return '';
         }
