@@ -286,24 +286,24 @@ include APP_PATH . '/views/admin/layout_header.php';
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="icon" id="addIconInput" value="book">
 
-            <div class="add-form-grid">
-                <div class="form-item">
-                    <label class="form-label">模块名称 <span class="text-danger">*</span></label>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label fw-semibold">模块名称 <span class="text-danger">*</span></label>
                     <input type="text" name="type_name" class="form-control" placeholder="如：日更板块" required>
                 </div>
-                <div class="form-item">
-                    <label class="form-label">类型代码 <span class="text-danger">*</span></label>
+                <div class="col-md-3 col-sm-6">
+                    <label class="form-label fw-semibold">类型代码 <span class="text-danger">*</span></label>
                     <input type="text" name="type_code" class="form-control" placeholder="如：daily_update" required>
-                    <small class="text-muted">英文+下划线</small>
                 </div>
-                <div class="form-item">
-                    <label class="form-label">模块图标</label>
+                <div class="col-md-2 col-sm-4">
+                    <label class="form-label fw-semibold">模块图标</label>
                     <div class="icon-wrapper">
-                        <div class="icon-select-btn" id="addIconBtn">
-                            <div class="icon-preview" id="addIconPreview">
+                        <div class="icon-select-btn-new" id="addIconBtn">
+                            <div class="icon-preview-small" id="addIconPreview">
                                 <i class="bi bi-book"></i>
                             </div>
-                            <span>选择</span>
+                            <span>选择图标</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
                         </div>
                         <div class="icon-dropdown" id="addIconDropdown">
                             <div class="icon-selector">
@@ -318,20 +318,20 @@ include APP_PATH . '/views/admin/layout_header.php';
                         </div>
                     </div>
                 </div>
-                <div class="form-item form-item-small">
-                    <label class="form-label">排序</label>
-                    <input type="number" name="sort_order" class="form-control" value="0">
+                <div class="col-md-1 col-sm-3 col-4">
+                    <label class="form-label fw-semibold">排序</label>
+                    <input type="number" name="sort_order" class="form-control text-center" value="0">
                 </div>
-                <div class="form-item form-item-check">
-                    <div class="form-check">
+                <div class="col-md-1 col-sm-3 col-4">
+                    <label class="form-label fw-semibold d-block">状态</label>
+                    <div class="form-check-box">
                         <input class="form-check-input" type="checkbox" name="need_status" id="addNeedStatus">
-                        <label class="form-check-label" for="addNeedStatus">需要状态</label>
+                        <label class="form-check-label small" for="addNeedStatus">连载/完结</label>
                     </div>
-                    <small class="text-muted">连载/完结</small>
                 </div>
-                <div class="form-item form-item-btn">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> 添加模块
+                <div class="col-md-2 col-sm-6 col-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle"></i> 添加
                     </button>
                 </div>
             </div>
@@ -340,53 +340,52 @@ include APP_PATH . '/views/admin/layout_header.php';
 </div>
 
 <style>
-.add-form-grid {
+/* 统一的图标选择按钮样式 */
+.icon-select-btn-new {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    align-items: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    height: 38px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #495057;
 }
-.form-item {
-    flex: 1;
-    min-width: 180px;
+.icon-select-btn-new:hover {
+    border-color: #FF6B35;
+    background: #fff9f5;
 }
-.form-item-small {
-    flex: 0 0 80px;
-    min-width: 80px;
+.icon-preview-small {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
+    border-radius: 6px;
+    color: white;
+    font-size: 0.9rem;
 }
-.form-item-check {
-    flex: 0 0 100px;
-    min-width: 100px;
-    padding-bottom: 5px;
+.form-check-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 8px;
+    background: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
 }
-.form-item-btn {
-    flex: 0 0 auto;
+.form-check-box .form-check-input {
+    margin: 0;
 }
-.form-item .form-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 5px;
-}
-.form-item .form-control {
-    height: 42px;
-}
-.form-item-btn .btn {
-    height: 42px;
-    padding: 0 20px;
+.form-check-box .form-check-label {
+    margin: 0;
     white-space: nowrap;
-}
-@media (max-width: 768px) {
-    .add-form-grid {
-        flex-direction: column;
-    }
-    .form-item, .form-item-small, .form-item-check, .form-item-btn {
-        flex: 1 1 100%;
-        min-width: 100%;
-    }
-    .form-item-btn .btn {
-        width: 100%;
-    }
 }
 </style>
 
