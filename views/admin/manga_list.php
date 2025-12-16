@@ -404,7 +404,7 @@ $(document).ready(function() {
     $(".delete-manga").click(function() {
         var id = $(this).data("id");
         if (confirm("确定要删除这个漫画吗？")) {
-            var csrfToken = $("input[name='csrf_token']").val();
+            var csrfToken = $("input[name=\'csrf_token\']").val();
             $.ajax({
                 url: "/admin88/api/delete-manga.php",
                 type: "POST",
