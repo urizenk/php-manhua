@@ -61,10 +61,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
                 'type_id'       => $typeId,
                 'title'         => $title,
                 'resource_link' => $resourceLink,
-                'extract_code'  => $extractCode,
-                'manga_tags'    => $mangaTags,
                 'description'   => $description,
             ];
+            
+            // 只有当数据库有这些字段时才添加（兼容旧数据库）
+            if ($extractCode) {
+                $insertData['extract_code'] = $extractCode;
+            }
+            if ($mangaTags) {
+                $insertData['manga_tags'] = $mangaTags;
+            }
 
             if ($tagId) {
                 $insertData['tag_id'] = $tagId;
