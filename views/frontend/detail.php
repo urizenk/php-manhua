@@ -338,12 +338,29 @@ include APP_PATH . '/views/layouts/header.php';
                 <div class="section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
                 <div class="resource-section">
                     <?php if ($manga['resource_link']): ?>
-                        <a href="<?php echo htmlspecialchars($manga['resource_link']); ?>" 
-                           target="_blank" 
-                           class="resource-link">
-                            <i class="bi bi-box-arrow-up-right"></i>
-                            <?php echo htmlspecialchars($manga['resource_link']); ?>
-                        </a>
+                        <?php 
+                        // 分割多行链接
+                        $links = preg_split('/[\r\n]+/', trim($manga['resource_link']));
+                        foreach ($links as $link): 
+                            $link = trim($link);
+                            if (empty($link)) continue;
+                            // 检查是否是有效的URL
+                            $isUrl = preg_match('/^https?:\/\//i', $link);
+                        ?>
+                            <?php if ($isUrl): ?>
+                                <a href="<?php echo htmlspecialchars($link); ?>" 
+                                   target="_blank" 
+                                   class="resource-link">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    <?php echo htmlspecialchars($link); ?>
+                                </a>
+                            <?php else: ?>
+                                <div class="resource-link" style="color: #666; cursor: default;">
+                                    <i class="bi bi-info-circle"></i>
+                                    <?php echo htmlspecialchars($link); ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                     
                     <?php if ($manga['extract_code']): ?>
