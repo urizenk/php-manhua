@@ -17,16 +17,52 @@ $totalMangas = $db->queryOne("SELECT COUNT(*) as count FROM mangas");
 $totalTags = $db->queryOne("SELECT COUNT(*) as count FROM tags WHERE tag_name != '未分类'");
 $todayMangas = $db->queryOne("SELECT COUNT(*) as count FROM mangas WHERE DATE(created_at) = CURDATE()");
 $currentAccessCode = $session->getAccessCode();
+
+// 获取首页跳转URL配置
+$homepageRedirectUrl = $db->queryOne("SELECT config_value FROM site_config WHERE config_key = 'homepage_redirect_url'");
+$homepageRedirectUrl = $homepageRedirectUrl['config_value'] ?? '';
 ?>
 
 <div class="content-header">
-    <h2>控制台</h2>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item active">控制台</li>
-        </ol>
-    </nav>
+    <div class="d-flex justify-content-between align-items-start flex-wrap">
+        <div>
+            <h2>控制台</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">控制台</li>
+                </ol>
+            </nav>
+        </div>
+        <!-- 首页跳转URL配置入口 -->
+        <div class="homepage-url-config">
+            <a href="/admin88/site-config" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-link-45deg"></i> 首页跳转URL
+            </a>
+            <?php if ($homepageRedirectUrl): ?>
+                <div class="url-preview mt-2">
+                    <small class="text-muted">当前: <?php echo htmlspecialchars(mb_substr($homepageRedirectUrl, 0, 30)); ?><?php echo mb_strlen($homepageRedirectUrl) > 30 ? '...' : ''; ?></small>
+                </div>
+            <?php else: ?>
+                <div class="url-preview mt-2">
+                    <small class="text-warning"><i class="bi bi-exclamation-circle"></i> 未设置</small>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
+
+<style>
+.homepage-url-config {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    min-width: 200px;
+}
+.url-preview {
+    font-size: 0.8rem;
+}
+</style>
 
 <!-- ========== 功能导航区域 ========== -->
 <div class="card mb-4">
@@ -107,7 +143,7 @@ $currentAccessCode = $session->getAccessCode();
     width: 50px;
     height: 50px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -151,7 +187,7 @@ $currentAccessCode = $session->getAccessCode();
     }
 }
 .bg-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
 }
 </style>
 
@@ -238,5 +274,3 @@ $currentAccessCode = $session->getAccessCode();
 </div>
 
 <?php include APP_PATH . '/views/admin/layout_footer.php'; ?>
-
-

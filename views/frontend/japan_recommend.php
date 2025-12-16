@@ -22,8 +22,12 @@ if (!$japanType) {
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $perPage = 18;
 
-// 获取当前选中的标签
+// 获取当前选中的标签和状态
 $selectedTag = $_GET['tag'] ?? 'all';
+$selectedStatus = $_GET['status'] ?? 'all';
+
+// 获取搜索关键词
+$keyword = $_GET['keyword'] ?? '';
 
 // 获取所有作者标签
 $tags = $db->query(
@@ -38,6 +42,16 @@ $params = [$japanType['id']];
 if ($selectedTag !== 'all') {
     $where .= " AND t.tag_name = ?";
     $params[] = $selectedTag;
+}
+
+if ($selectedStatus !== 'all') {
+    $where .= " AND m.status = ?";
+    $params[] = $selectedStatus;
+}
+
+if ($keyword) {
+    $where .= " AND m.title LIKE ?";
+    $params[] = "%{$keyword}%";
 }
 
 // 获取总数
@@ -58,6 +72,40 @@ $mangas = $db->query(
     $params
 );
 
+// 按状态和字母分组
+$groupedMangas = [
+    'new' => [],
+    'serializing' => [],
+    'completed' => [],
+    'by_letter' => []
+];
+
+foreach ($mangas as $manga) {
+    // 按状态分组
+    if ($manga['status'] === 'serializing') {
+        $groupedMangas['serializing'][] = $manga;
+    } elseif ($manga['status'] === 'completed') {
+        $groupedMangas['completed'][] = $manga;
+    } else {
+        $groupedMangas['new'][] = $manga;
+    }
+    
+    // 按字母分组
+    $firstChar = mb_substr($manga['title'], 0, 1);
+    if (preg_match('/[A-Za-z]/', $firstChar)) {
+        $letter = strtoupper($firstChar);
+        if (!isset($groupedMangas['by_letter'][$letter])) {
+            $groupedMangas['by_letter'][$letter] = [];
+        }
+        $groupedMangas['by_letter'][$letter][] = $manga;
+    }
+}
+
+// 对字母分组进行排序
+if (!empty($groupedMangas['by_letter'])) {
+    ksort($groupedMangas['by_letter']);
+}
+
 $customCss = '
 <style>
     .content-wrapper {
@@ -70,23 +118,104 @@ $customCss = '
         border-radius: 20px;
         padding: 30px;
         margin-bottom: 30px;
-        text-align: center;
     }
     .page-title {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
         font-weight: bold;
-        color: #1976D2;
-        margin-bottom: 10px;
+        color: #333;
+        margin-bottom: 15px;
     }
-    .page-subtitle {
-        color: #666;
-        font-size: 1rem;
+    .tip-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 12px 15px;
+        margin: 15px 0;
+        border-radius: 5px;
+        font-size: 0.9rem;
+        color: #856404;
+        text-align: left;
+    }
+    .tip-box i {
+        margin-right: 8px;
+    }
+    .back-btn-top {
+        display: inline-block;
+        background: #ff5722;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: bold;
+        margin: 15px 0;
+        transition: all 0.3s ease;
+    }
+    .back-btn-top:hover {
+        background: #e64a19;
+        color: white;
+        transform: translateY(-2px);
+    }
+    .search-box {
+        margin: 20px 0;
+    }
+    .search-form {
+        display: flex;
+        gap: 10px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+    }
+    .search-input:focus {
+        border-color: #2196F3;
+    }
+    .search-btn {
+        padding: 10px 30px;
+        background: #ffc107;
+        color: #333;
+        border: none;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .search-btn:hover {
+        background: #ffb300;
+        transform: translateY(-2px);
+    }
+    .new-manga-btn {
+        display: inline-block;
+        background: #ffc107;
+        color: #333;
+        padding: 10px 25px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-top: 15px;
+        transition: all 0.3s ease;
+    }
+    .new-manga-btn:hover {
+        background: #ffb300;
+        color: #333;
+        transform: translateY(-2px);
     }
     .filter-section {
         background: white;
         border-radius: 15px;
         padding: 25px;
         margin-bottom: 30px;
+    }
+    .filter-group {
+        margin-bottom: 20px;
+    }
+    .filter-group:last-child {
+        margin-bottom: 0;
     }
     .filter-label {
         font-weight: bold;
@@ -251,25 +380,77 @@ include APP_PATH . '/views/layouts/header.php';
 <div class="content-wrapper">
     <!-- 页面头部 -->
     <div class="page-header">
-        <h1 class="page-title">🎌 日漫推荐</h1>
-        <p class="page-subtitle">精品日漫推荐 · 每页展示18本</p>
+        <h1 class="page-title">日漫推荐</h1>
+        
+        <!-- Tip提示框 -->
+        <div class="tip-box">
+            <i class="bi bi-info-circle"></i>
+            Tip：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新漫画！
+        </div>
+        
+        <!-- 返回按钮 -->
+        <a href="/" class="back-btn-top">
+            <i class="bi bi-arrow-left"></i> 回到目录
+        </a>
+        
+        <!-- 搜索框 -->
+        <div class="search-box">
+            <form method="GET" class="search-form">
+                <input type="hidden" name="tag" value="<?php echo htmlspecialchars($selectedTag); ?>">
+                <input type="hidden" name="status" value="<?php echo htmlspecialchars($selectedStatus); ?>">
+                <input type="hidden" name="page" value="<?php echo $page; ?>">
+                <input type="text" 
+                       name="keyword" 
+                       class="search-input" 
+                       placeholder="搜索不用打全称，用关键词搜索..." 
+                       value="<?php echo htmlspecialchars($keyword); ?>">
+                <button type="submit" class="search-btn">查看</button>
+            </form>
+        </div>
+        
+        <!-- 新推漫按钮 -->
+        <a href="?tag=<?php echo $selectedTag; ?>&status=<?php echo $selectedStatus; ?>" class="new-manga-btn">
+            新推漫
+        </a>
     </div>
 
-    <!-- 标签筛选 -->
+    <!-- 筛选区域 -->
     <?php if (!empty($tags)): ?>
     <div class="filter-section">
-        <label class="filter-label">🏷️ 作者/分类标签</label>
-        <div class="filter-tags">
-            <a href="?page=1" 
-               class="filter-tag <?php echo $selectedTag === 'all' ? 'active' : ''; ?>">
-                全部
-            </a>
-            <?php foreach ($tags as $tag): ?>
-                <a href="?tag=<?php echo urlencode($tag['tag_name']); ?>&page=1" 
-                   class="filter-tag <?php echo $selectedTag === $tag['tag_name'] ? 'active' : ''; ?>">
-                    <?php echo htmlspecialchars($tag['tag_name']); ?>
+        <!-- 作者筛选 -->
+        <div class="filter-group">
+            <label class="filter-label">📑 作者筛选</label>
+            <div class="filter-tags">
+                <a href="?status=<?php echo $selectedStatus; ?>&page=<?php echo $page; ?>" 
+                   class="filter-tag <?php echo $selectedTag === 'all' ? 'active' : ''; ?>">
+                    全部
                 </a>
-            <?php endforeach; ?>
+                <?php foreach ($tags as $tag): ?>
+                    <a href="?tag=<?php echo urlencode($tag['tag_name']); ?>&status=<?php echo $selectedStatus; ?>&page=<?php echo $page; ?>" 
+                       class="filter-tag <?php echo $selectedTag === $tag['tag_name'] ? 'active' : ''; ?>">
+                        <?php echo htmlspecialchars($tag['tag_name']); ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        
+        <!-- 状态筛选 -->
+        <div class="filter-group">
+            <label class="filter-label">📊 连载状态</label>
+            <div class="filter-tags">
+                <a href="?tag=<?php echo $selectedTag; ?>&page=<?php echo $page; ?>" 
+                   class="filter-tag <?php echo $selectedStatus === 'all' ? 'active' : ''; ?>">
+                    全部
+                </a>
+                <a href="?tag=<?php echo $selectedTag; ?>&status=serializing&page=<?php echo $page; ?>" 
+                   class="filter-tag <?php echo $selectedStatus === 'serializing' ? 'active' : ''; ?>">
+                    连载中
+                </a>
+                <a href="?tag=<?php echo $selectedTag; ?>&status=completed&page=<?php echo $page; ?>" 
+                   class="filter-tag <?php echo $selectedStatus === 'completed' ? 'active' : ''; ?>">
+                    已完结
+                </a>
+            </div>
         </div>
     </div>
     <?php endif; ?>

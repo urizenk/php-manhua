@@ -73,6 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
                 );
             }
             
+            // 更新首页跳转URL
+            if (isset($_POST['homepage_redirect_url'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('homepage_redirect_url', ?, '首页跳转URL') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['homepage_redirect_url'], $_POST['homepage_redirect_url']]
+                );
+            }
+            
             $db->commit();
             $message = '配置保存成功！';
             $messageType = 'success';
@@ -98,6 +108,7 @@ $siteName = $configs['site_name'] ?? '海の小窝';
 $siteDesc = $configs['site_desc'] ?? '无偿分享 禁止盗卖 更多精彩';
 $weiboUrl = $configs['weibo_url'] ?? 'https://weibo.com/';
 $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
+$homepageRedirectUrl = $configs['homepage_redirect_url'] ?? '';
 
 ?>
 
@@ -111,7 +122,7 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FFF5E6 0%, #FFE4CC 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -120,11 +131,11 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.15);
             overflow: hidden;
         }
         .config-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -149,14 +160,14 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
         .section-title {
             font-size: 1.3rem;
             font-weight: 600;
-            color: #2c3e50;
+            color: #333;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         .section-title i {
-            color: #3498db;
+            color: #FF6B35;
         }
         .form-label {
             font-weight: 600;
@@ -170,8 +181,8 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
             transition: all 0.3s ease;
         }
         .form-control:focus, .form-select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
         }
         .help-text {
             font-size: 0.875rem;
@@ -179,7 +190,7 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
             margin-top: 5px;
         }
         .btn-save {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
             border: none;
             padding: 12px 40px;
             font-size: 1.1rem;
@@ -189,7 +200,7 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
         }
         .btn-save:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
         }
         .btn-back {
             background: #6c757d;
@@ -205,8 +216,8 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
             transform: translateY(-2px);
         }
         .preview-box {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
+            background: #FFF5E6;
+            border: 2px dashed #FFD4B8;
             border-radius: 8px;
             padding: 20px;
             margin-top: 15px;
@@ -230,6 +241,15 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        .tip-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #856404;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -279,6 +299,27 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
                     </div>
                 </div>
 
+                <!-- 首页跳转配置 -->
+                <div class="config-section">
+                    <div class="section-title">
+                        <i class="bi bi-link-45deg"></i>
+                        首页跳转配置
+                    </div>
+                    
+                    <div class="tip-box">
+                        <i class="bi bi-info-circle"></i> 
+                        设置此URL后，用户点击首页的微博按钮将跳转到这个地址
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="homepage_redirect_url" class="form-label">首页跳转URL</label>
+                        <input type="url" class="form-control" id="homepage_redirect_url" name="homepage_redirect_url" 
+                               value="<?php echo htmlspecialchars($homepageRedirectUrl); ?>" 
+                               placeholder="https://weibo.com/your-account">
+                        <div class="help-text">点击首页微博按钮时跳转的URL地址，留空则使用下方微博链接</div>
+                    </div>
+                </div>
+
                 <!-- 社交媒体配置 -->
                 <div class="config-section">
                     <div class="section-title">
@@ -291,7 +332,7 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
                         <input type="url" class="form-control" id="weibo_url" name="weibo_url" 
                                value="<?php echo htmlspecialchars($weiboUrl); ?>" 
                                placeholder="https://weibo.com/your-account" required>
-                        <div class="help-text">输入您的微博主页完整URL地址</div>
+                        <div class="help-text">输入您的微博主页完整URL地址（当首页跳转URL为空时使用）</div>
                     </div>
 
                     <div class="mb-3">
@@ -305,7 +346,7 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
                     <!-- 预览 -->
                     <div class="preview-box">
                         <div class="preview-label">按钮预览效果：</div>
-                        <a href="<?php echo htmlspecialchars($weiboUrl); ?>" target="_blank" class="weibo-preview" id="weibo-preview">
+                        <a href="<?php echo htmlspecialchars($homepageRedirectUrl ?: $weiboUrl); ?>" target="_blank" class="weibo-preview" id="weibo-preview">
                             <?php echo htmlspecialchars($weiboText); ?>
                         </a>
                     </div>
@@ -327,13 +368,18 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // 实时预览
-        document.getElementById('weibo_url').addEventListener('input', function() {
-            document.getElementById('weibo-preview').href = this.value;
-        });
+        document.getElementById('weibo_url').addEventListener('input', updatePreviewUrl);
+        document.getElementById('homepage_redirect_url').addEventListener('input', updatePreviewUrl);
         
         document.getElementById('weibo_text').addEventListener('input', function() {
             document.getElementById('weibo-preview').textContent = this.value;
         });
+        
+        function updatePreviewUrl() {
+            var redirectUrl = document.getElementById('homepage_redirect_url').value;
+            var weiboUrl = document.getElementById('weibo_url').value;
+            document.getElementById('weibo-preview').href = redirectUrl || weiboUrl;
+        }
     </script>
 </body>
 </html>

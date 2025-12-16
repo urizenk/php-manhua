@@ -1,6 +1,7 @@
 <?php
 /**
  * F10-详情页模块
+ * 展示漫画详细信息
  */
 
 // 从 GLOBALS 获取变量
@@ -8,13 +9,8 @@ $db = $GLOBALS['db'] ?? null;
 $session = $GLOBALS['session'] ?? null;
 $config = $GLOBALS['config'] ?? null;
 
-/**
- * F8-详情页模块
- * 展示漫画详细信息
- */
-
 // 获取漫画ID
-$mangaId = $id ?? 0;
+$mangaId = $GLOBALS['id'] ?? 0;
 
 // 查询漫画详情
 $manga = $db->queryOne(
@@ -39,142 +35,200 @@ $chapters = $db->query(
     [$mangaId]
 );
 
-// 判断是否需要奶黄色背景（单集汇总类型）
-$isSpecialBg = in_array($manga['type_code'] ?? '', ['daily_update', 'short_complete']);
+// 解析漫画标签
+$mangaTags = [];
+if (!empty($manga['manga_tags'])) {
+    $mangaTags = array_map('trim', explode('，', $manga['manga_tags']));
+    // 也支持英文逗号
+    if (count($mangaTags) === 1) {
+        $mangaTags = array_map('trim', explode(',', $manga['manga_tags']));
+    }
+}
+
+// 判断简介是否过长（超过200字）
+$description = $manga['description'] ?? '';
+$isLongDescription = mb_strlen($description) > 200;
+$shortDescription = $isLongDescription ? mb_substr($description, 0, 200) . '...' : $description;
 
 $customCss = '
 <style>
+    body {
+        background: #FFF8DC;
+        min-height: 100vh;
+    }
     .content-wrapper {
-        max-width: 1200px;
+        max-width: 800px;
         margin: 0 auto;
-        padding: 30px 20px;
+        padding: 20px 15px;
     }
     .detail-card {
-        background: ' . ($isSpecialBg ? '#FFF8DC' : 'white') . ';
-        border-radius: 20px;
-        overflow: hidden;
-        margin-bottom: 30px;
-    }
-    .detail-header {
-        padding: 40px;
-        text-align: center;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    }
-    .manga-title {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 15px;
-    }
-    .manga-meta {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        flex-wrap: wrap;
-        margin-top: 20px;
-    }
-    .meta-item {
-        display: flex;
-        align-items: center;
-        color: #666;
-        font-size: 1rem;
-    }
-    .meta-item i {
-        margin-right: 8px;
-        color: #1976D2;
-        font-size: 1.2rem;
-    }
-    .detail-body {
-        padding: 40px;
-    }
-    .cover-section {
-        display: flex;
-        gap: 40px;
-        margin-bottom: 40px;
-    }
-    .cover-image-wrapper {
-        flex-shrink: 0;
-    }
-    .cover-image {
-        width: 300px;
-        height: 400px;
+        background: white;
         border-radius: 15px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
-    .cover-image img {
+    .cover-section {
+        position: relative;
+    }
+    .cover-image {
         width: 100%;
-        height: 100%;
+        max-height: 350px;
         object-fit: cover;
+        display: block;
     }
     .no-cover {
-        background: #1976D2;
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 5rem;
+        font-size: 4rem;
     }
-    .manga-info {
-        flex: 1;
+    .detail-body {
+        padding: 25px 20px;
     }
-    .info-section {
-        margin-bottom: 25px;
-    }
-    .info-title {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
-    }
-    .info-content {
-        color: #666;
-        line-height: 1.8;
-    }
-    .status-badge {
-        display: inline-block;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: bold;
-    }
-    .status-serializing {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-    .status-completed {
-        background: #d4edda;
-        color: #155724;
-    }
-    .chapter-section {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        margin-bottom: 30px;
-    }
-    .section-title {
+    .manga-title {
         font-size: 1.5rem;
         font-weight: bold;
         color: #333;
+        margin-bottom: 15px;
+        line-height: 1.4;
+    }
+    .manga-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    .meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        background: #f5f5f5;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: #666;
+    }
+    .meta-item i {
+        color: #999;
+    }
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .status-serializing {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+    .status-completed {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+    .manga-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
         margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
+    }
+    .manga-tag {
+        display: inline-block;
+        padding: 5px 14px;
+        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+        color: #1565C0;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .section-title {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #333;
+        margin: 20px 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-title i {
+        color: #FF6B35;
+    }
+    .description-text {
+        color: #555;
+        line-height: 1.8;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+    }
+    .description-full {
+        display: none;
+    }
+    .description-toggle {
+        color: #1976D2;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .description-toggle:hover {
+        text-decoration: underline;
+    }
+    .resource-section {
+        background: #FFF8E1;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 20px 0;
+    }
+    .resource-link {
+        display: block;
+        padding: 12px 15px;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        text-decoration: none;
+        color: #1976D2;
+        font-size: 0.95rem;
+        word-break: break-all;
+        transition: all 0.2s ease;
+        border: 1px solid #e0e0e0;
+    }
+    .resource-link:hover {
+        background: #E3F2FD;
+        border-color: #1976D2;
+    }
+    .extract-code {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 15px;
+        background: #FFF3E0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #E65100;
+        margin-top: 10px;
+    }
+    .extract-code-value {
+        font-weight: bold;
+        font-family: monospace;
+        font-size: 1rem;
+        background: white;
+        padding: 2px 10px;
+        border-radius: 5px;
     }
     .chapter-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
     .chapter-item {
-        padding: 15px;
-        border: 2px solid #f0f0f0;
-        border-radius: 10px;
-        transition: all 0.3s ease;
+        padding: 12px 15px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s ease;
+    }
+    .chapter-item:last-child {
+        border-bottom: none;
     }
     .chapter-item:hover {
-        border-color: #1976D2;
         background: #f8f9ff;
-        transform: translateX(5px);
     }
     .chapter-link {
         text-decoration: none;
@@ -182,50 +236,33 @@ $customCss = '
         display: flex;
         align-items: center;
         justify-content: space-between;
+        font-size: 0.95rem;
     }
     .chapter-link:hover {
         color: #1976D2;
     }
-    .resource-btn {
+    .chapter-link i {
+        color: #999;
+    }
+    .bottom-back {
+        text-align: center;
+        margin-top: 30px;
+        padding-bottom: 20px;
+    }
+    .bottom-back-btn {
         display: inline-block;
-        background: #1976D2;
-        color: white;
-        padding: 15px 40px;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-    }
-    .resource-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(25, 118, 210, 0.4);
-        color: white;
-    }
-    .back-btn {
         background: white;
-        color: #1976D2;
-        border: 2px solid #1976D2;
-        border-radius: 25px;
+        color: #FF6B35;
+        border: 2px solid #FF6B35;
         padding: 10px 30px;
-        font-weight: bold;
+        border-radius: 25px;
         text-decoration: none;
-        display: inline-block;
+        font-weight: 500;
         transition: all 0.3s ease;
     }
-    .back-btn:hover {
-        background: #1976D2;
+    .bottom-back-btn:hover {
+        background: #FF6B35;
         color: white;
-    }
-    @media (max-width: 768px) {
-        .cover-section {
-            flex-direction: column;
-        }
-        .cover-image {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
     }
 </style>
 ';
@@ -236,97 +273,135 @@ include APP_PATH . '/views/layouts/header.php';
 <div class="content-wrapper">
     <!-- 详情卡片 -->
     <div class="detail-card">
-        <div class="detail-header">
-            <h1 class="manga-title"><?php echo htmlspecialchars($manga['title']); ?></h1>
-            <div class="manga-meta">
-                <div class="meta-item">
-                    <i class="bi bi-folder"></i>
-                    <span><?php echo htmlspecialchars($manga['type_name']); ?></span>
+        <!-- 封面图片 -->
+        <div class="cover-section">
+            <?php if ($manga['cover_image']): ?>
+                <img src="<?php echo htmlspecialchars($manga['cover_image']); ?>" 
+                     alt="<?php echo htmlspecialchars($manga['title']); ?>"
+                     class="cover-image"
+                     style="object-position: <?php echo htmlspecialchars($manga['cover_position'] ?? 'center'); ?>;">
+            <?php else: ?>
+                <div class="no-cover">
+                    <i class="bi bi-book"></i>
                 </div>
-                <div class="meta-item">
-                    <i class="bi bi-tag"></i>
-                    <span><?php echo htmlspecialchars($manga['tag_name'] ?? '未分类'); ?></span>
-                </div>
-                <?php if ($manga['status']): ?>
-                <div class="meta-item">
-                    <i class="bi bi-info-circle"></i>
-                    <span class="status-badge status-<?php echo $manga['status']; ?>">
-                        <?php echo $manga['status'] === 'serializing' ? '连载中' : '已完结'; ?>
-                    </span>
-                </div>
-                <?php endif; ?>
-                <div class="meta-item">
-                    <i class="bi bi-eye"></i>
-                    <span><?php echo number_format($manga['views']); ?> 次浏览</span>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
 
         <div class="detail-body">
-            <div class="cover-section">
-                <?php if ($manga['cover_image']): ?>
-                <div class="cover-image-wrapper">
-                    <div class="cover-image">
-                        <img src="<?php echo htmlspecialchars($manga['cover_image']); ?>" 
-                             alt="<?php echo htmlspecialchars($manga['title']); ?>"
-                             style="object-position: <?php echo htmlspecialchars($manga['cover_position'] ?? 'center'); ?>;">
-                    </div>
-                </div>
+            <!-- 标题 -->
+            <h1 class="manga-title"><?php echo htmlspecialchars($manga['title']); ?></h1>
+
+            <!-- 元信息 -->
+            <div class="manga-meta">
+                <span class="meta-item">
+                    <i class="bi bi-folder"></i>
+                    <?php echo htmlspecialchars($manga['type_name']); ?>
+                </span>
+                
+                <?php if ($manga['status']): ?>
+                    <span class="status-badge status-<?php echo $manga['status']; ?>">
+                        <?php echo $manga['status'] === 'serializing' ? '连载中' : '已完结'; ?>
+                    </span>
                 <?php endif; ?>
+            </div>
 
-                <div class="manga-info">
-                    <?php if ($manga['description']): ?>
-                    <div class="info-section">
-                        <div class="info-title">📖 简介</div>
-                        <div class="info-content">
-                            <?php echo nl2br(htmlspecialchars($manga['description'])); ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
+            <!-- 漫画标签 -->
+            <?php if (!empty($mangaTags)): ?>
+                <div class="manga-tags">
+                    <?php foreach ($mangaTags as $tag): ?>
+                        <?php if (trim($tag)): ?>
+                            <span class="manga-tag"><?php echo htmlspecialchars($tag); ?></span>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
 
-                    <?php if ($manga['resource_link']): ?>
-                    <div class="info-section">
-                        <div class="info-title">🔗 资源链接</div>
-                        <div class="info-content">
-                            <a href="<?php echo htmlspecialchars($manga['resource_link']); ?>" 
-                               target="_blank" 
-                               class="resource-btn">
-                                <i class="bi bi-box-arrow-up-right"></i> 访问资源
-                            </a>
-                        </div>
-                    </div>
+            <!-- 简介 -->
+            <?php if ($description): ?>
+                <div class="section-title"><i class="bi bi-file-text"></i> 简介</div>
+                <div class="description-text" id="descriptionShort">
+                    <?php echo nl2br(htmlspecialchars($shortDescription)); ?>
+                    <?php if ($isLongDescription): ?>
+                        <span class="description-toggle" onclick="toggleDescription()">展开全部</span>
                     <?php endif; ?>
                 </div>
-            </div>
+                <?php if ($isLongDescription): ?>
+                    <div class="description-text description-full" id="descriptionFull">
+                        <?php echo nl2br(htmlspecialchars($description)); ?>
+                        <span class="description-toggle" onclick="toggleDescription()">收起</span>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <!-- 资源链接 -->
+            <?php if ($manga['resource_link'] || $manga['extract_code']): ?>
+                <div class="section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
+                <div class="resource-section">
+                    <?php if ($manga['resource_link']): ?>
+                        <a href="<?php echo htmlspecialchars($manga['resource_link']); ?>" 
+                           target="_blank" 
+                           class="resource-link">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <?php echo htmlspecialchars($manga['resource_link']); ?>
+                        </a>
+                    <?php endif; ?>
+                    
+                    <?php if ($manga['extract_code']): ?>
+                        <div class="extract-code">
+                            <i class="bi bi-key"></i>
+                            提取码：
+                            <span class="extract-code-value"><?php echo htmlspecialchars($manga['extract_code']); ?></span>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
     <!-- 章节列表 -->
     <?php if (!empty($chapters)): ?>
-    <div class="chapter-section">
-        <h2 class="section-title">📚 章节列表</h2>
-        <div class="chapter-list">
-            <?php foreach ($chapters as $chapter): ?>
-                <div class="chapter-item">
-                    <a href="<?php echo htmlspecialchars($chapter['chapter_link']); ?>" 
-                       target="_blank" 
-                       class="chapter-link">
-                        <span><?php echo htmlspecialchars($chapter['chapter_title']); ?></span>
-                        <i class="bi bi-box-arrow-up-right"></i>
-                    </a>
-                </div>
-            <?php endforeach; ?>
+    <div class="detail-card" style="margin-top: 20px;">
+        <div class="detail-body">
+            <div class="section-title"><i class="bi bi-list-ul"></i> 章节列表</div>
+            <ul class="chapter-list">
+                <?php foreach ($chapters as $chapter): ?>
+                    <li class="chapter-item">
+                        <a href="<?php echo htmlspecialchars($chapter['chapter_link']); ?>" 
+                           target="_blank" 
+                           class="chapter-link">
+                            <span><?php echo htmlspecialchars($chapter['chapter_title']); ?></span>
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         </div>
     </div>
     <?php endif; ?>
 
     <!-- 返回按钮 -->
-    <div class="text-center mt-4">
-        <a href="javascript:history.back()" class="back-btn">
+    <div class="bottom-back">
+        <a href="javascript:history.back()" class="bottom-back-btn">
             <i class="bi bi-arrow-left"></i> 返回上一页
         </a>
     </div>
 </div>
+
+<script>
+function toggleDescription() {
+    var shortEl = document.getElementById('descriptionShort');
+    var fullEl = document.getElementById('descriptionFull');
+    if (shortEl && fullEl) {
+        if (fullEl.style.display === 'none' || fullEl.style.display === '') {
+            shortEl.style.display = 'none';
+            fullEl.style.display = 'block';
+        } else {
+            shortEl.style.display = 'block';
+            fullEl.style.display = 'none';
+        }
+    }
+}
+</script>
 
 <?php
 // 增加浏览次数

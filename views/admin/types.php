@@ -18,6 +18,35 @@ $pageTitle   = '模块管理';
 $message     = '';
 $messageType = '';
 
+// 可选图标列表
+$availableIcons = [
+    'calendar-date' => '日历',
+    'collection' => '合集',
+    'book' => '书本',
+    'star' => '星星',
+    'gift' => '礼物',
+    'film' => '电影',
+    'headphones' => '耳机',
+    'chat-dots' => '对话',
+    'geo-alt' => '定位',
+    'heart' => '爱心',
+    'fire' => '火焰',
+    'lightning' => '闪电',
+    'trophy' => '奖杯',
+    'bookmark' => '书签',
+    'folder' => '文件夹',
+    'grid' => '网格',
+    'list' => '列表',
+    'check-circle' => '勾选',
+    'play-circle' => '播放',
+    'music-note' => '音符',
+    'camera' => '相机',
+    'image' => '图片',
+    'puzzle' => '拼图',
+    'cup-hot' => '咖啡',
+    'emoji-smile' => '笑脸',
+];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
@@ -30,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 $typeName   = trim($_POST['type_name'] ?? '');
                 $typeCode   = trim($_POST['type_code'] ?? '');
+                $icon       = trim($_POST['icon'] ?? 'book');
                 $sortOrder  = (int)($_POST['sort_order'] ?? 0);
                 $needCover  = isset($_POST['need_cover']) ? 1 : 0;
                 $needStatus = isset($_POST['need_status']) ? 1 : 0;
@@ -44,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $db->insert('manga_types', [
                         'type_name'   => $typeName,
                         'type_code'   => $typeCode,
+                        'icon'        => $icon,
                         'sort_order'  => $sortOrder,
                         'need_cover'  => $needCover,
                         'need_status' => $needStatus,
@@ -60,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $id         = (int)($_POST['id'] ?? 0);
                 $typeName   = trim($_POST['type_name'] ?? '');
                 $typeCode   = trim($_POST['type_code'] ?? '');
+                $icon       = trim($_POST['icon'] ?? 'book');
                 $sortOrder  = (int)($_POST['sort_order'] ?? 0);
                 $needCover  = isset($_POST['need_cover']) ? 1 : 0;
                 $needStatus = isset($_POST['need_status']) ? 1 : 0;
@@ -75,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [
                         'type_name'   => $typeName,
                         'type_code'   => $typeCode,
+                        'icon'        => $icon,
                         'sort_order'  => $sortOrder,
                         'need_cover'  => $needCover,
                         'need_status' => $needStatus,
@@ -130,6 +163,101 @@ $types = $db->query('SELECT * FROM manga_types ORDER BY sort_order, id');
 include APP_PATH . '/views/admin/layout_header.php';
 ?>
 
+<style>
+    .icon-selector {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    .icon-option {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    .icon-option:hover {
+        border-color: #FF6B35;
+        background: #FFF5E6;
+    }
+    .icon-option.selected {
+        border-color: #FF6B35;
+        background: #FF6B35;
+        color: white;
+    }
+    .icon-option i {
+        font-size: 1.3rem;
+    }
+    .icon-preview {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
+        border-radius: 12px;
+        color: white;
+        font-size: 1.5rem;
+    }
+    .icon-select-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .icon-select-btn:hover {
+        border-color: #FF6B35;
+    }
+    .icon-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        display: none;
+        width: 300px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        padding: 15px;
+    }
+    .icon-dropdown.show {
+        display: block;
+    }
+    .icon-wrapper {
+        position: relative;
+    }
+    .table-icon-cell {
+        width: 80px;
+    }
+    .table-icon-preview {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
+        border-radius: 10px;
+        color: white;
+        font-size: 1.2rem;
+    }
+</style>
+
 <div class="content-header">
     <h2>模块管理</h2>
     <nav aria-label="breadcrumb">
@@ -150,12 +278,13 @@ include APP_PATH . '/views/admin/layout_header.php';
 <!-- 添加模块 -->
 <div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">添加新模块</h5>
+        <h5 class="mb-0"><i class="bi bi-plus-circle text-primary"></i> 添加新模块</h5>
     </div>
     <div class="card-body">
         <form method="POST" class="row g-3">
             <?php echo $session->csrfField(); ?>
             <input type="hidden" name="action" value="add">
+            <input type="hidden" name="icon" id="addIconInput" value="book">
 
             <div class="col-md-3">
                 <label class="form-label">模块名称</label>
@@ -167,25 +296,46 @@ include APP_PATH . '/views/admin/layout_header.php';
                 <small class="text-muted">用于程序识别，建议使用英文+下划线</small>
             </div>
             <div class="col-md-2">
+                <label class="form-label">模块图标</label>
+                <div class="icon-wrapper">
+                    <div class="icon-select-btn" id="addIconBtn">
+                        <div class="icon-preview" id="addIconPreview">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <span>选择图标</span>
+                    </div>
+                    <div class="icon-dropdown" id="addIconDropdown">
+                        <div class="icon-selector">
+                            <?php foreach ($availableIcons as $iconName => $iconLabel): ?>
+                                <div class="icon-option <?php echo $iconName === 'book' ? 'selected' : ''; ?>" 
+                                     data-icon="<?php echo $iconName; ?>" 
+                                     title="<?php echo $iconLabel; ?>">
+                                    <i class="bi bi-<?php echo $iconName; ?>"></i>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1">
                 <label class="form-label">排序</label>
                 <input type="number" name="sort_order" class="form-control" value="0">
             </div>
-            <div class="col-md-2 d-flex align-items-center">
+            <div class="col-md-1 d-flex align-items-center">
                 <div class="form-check mt-3">
                     <input class="form-check-input" type="checkbox" name="need_cover" id="addNeedCover">
-                    <label class="form-check-label" for="addNeedCover">需要封面</label>
+                    <label class="form-check-label" for="addNeedCover">封面</label>
                 </div>
             </div>
-            <div class="col-md-2 d-flex align-items-center">
+            <div class="col-md-1 d-flex align-items-center">
                 <div class="form-check mt-3">
                     <input class="form-check-input" type="checkbox" name="need_status" id="addNeedStatus">
-                    <label class="form-check-label" for="addNeedStatus">需要状态</label>
+                    <label class="form-check-label" for="addNeedStatus">状态</label>
                 </div>
             </div>
-
-            <div class="col-12 text-end">
-                <button type="submit" class="btn btn-primary btn-custom">
-                    <i class="bi bi-plus-circle"></i> 添加模块
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-plus"></i> 添加
                 </button>
             </div>
         </form>
@@ -195,7 +345,7 @@ include APP_PATH . '/views/admin/layout_header.php';
 <!-- 模块列表 -->
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">模块列表</h5>
+        <h5 class="mb-0"><i class="bi bi-list-ul text-info"></i> 模块列表</h5>
     </div>
     <div class="card-body">
         <?php if (empty($types)): ?>
@@ -207,11 +357,12 @@ include APP_PATH . '/views/admin/layout_header.php';
                     <thead class="table-light">
                         <tr>
                             <th width="60">ID</th>
+                            <th class="table-icon-cell">图标</th>
                             <th>模块名称</th>
                             <th>类型代码</th>
                             <th width="80">排序</th>
-                            <th width="80">封面</th>
-                            <th width="80">状态</th>
+                            <th width="60">封面</th>
+                            <th width="60">状态</th>
                             <th width="160">操作</th>
                         </tr>
                     </thead>
@@ -220,10 +371,30 @@ include APP_PATH . '/views/admin/layout_header.php';
                             <tr>
                                 <td><?php echo (int)$type['id']; ?></td>
                                 <td>
-                                    <form method="POST" class="d-flex align-items-center gap-2">
+                                    <form method="POST" class="module-form" data-id="<?php echo (int)$type['id']; ?>">
                                         <?php echo $session->csrfField(); ?>
                                         <input type="hidden" name="action" value="update">
                                         <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
+                                        <input type="hidden" name="icon" class="icon-input" value="<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>">
+                                        
+                                        <div class="icon-wrapper">
+                                            <div class="table-icon-preview icon-trigger" style="cursor: pointer;">
+                                                <i class="bi bi-<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>"></i>
+                                            </div>
+                                            <div class="icon-dropdown">
+                                                <div class="icon-selector">
+                                                    <?php foreach ($availableIcons as $iconName => $iconLabel): ?>
+                                                        <div class="icon-option <?php echo ($type['icon'] ?? 'book') === $iconName ? 'selected' : ''; ?>" 
+                                                             data-icon="<?php echo $iconName; ?>" 
+                                                             title="<?php echo $iconLabel; ?>">
+                                                            <i class="bi bi-<?php echo $iconName; ?>"></i>
+                                                        </div>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </td>
+                                <td>
                                         <input type="text" name="type_name" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['type_name']); ?>">
                                 </td>
@@ -235,14 +406,14 @@ include APP_PATH . '/views/admin/layout_header.php';
                                         <input type="number" name="sort_order" class="form-control form-control-sm"
                                                value="<?php echo (int)$type['sort_order']; ?>">
                                 </td>
-                                <td>
-                                        <div class="form-check">
+                                <td class="text-center">
+                                        <div class="form-check d-flex justify-content-center">
                                             <input class="form-check-input" type="checkbox" name="need_cover"
                                                    <?php echo $type['need_cover'] ? 'checked' : ''; ?>>
                                         </div>
                                 </td>
-                                <td>
-                                        <div class="form-check">
+                                <td class="text-center">
+                                        <div class="form-check d-flex justify-content-center">
                                             <input class="form-check-input" type="checkbox" name="need_status"
                                                    <?php echo $type['need_status'] ? 'checked' : ''; ?>>
                                         </div>
@@ -277,8 +448,12 @@ include APP_PATH . '/views/admin/layout_header.php';
                             <?php echo $session->csrfField(); ?>
                             <input type="hidden" name="action" value="update">
                             <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
+                            <input type="hidden" name="icon" class="icon-input" value="<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>">
                             
-                            <div class="mobile-card-header">
+                            <div class="mobile-card-header d-flex align-items-center gap-2">
+                                <div class="table-icon-preview icon-trigger" style="cursor: pointer;">
+                                    <i class="bi bi-<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>"></i>
+                                </div>
                                 <span class="badge bg-secondary">ID: <?php echo (int)$type['id']; ?></span>
                             </div>
                             
@@ -386,5 +561,73 @@ include APP_PATH . '/views/admin/layout_header.php';
         </style>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 添加模块的图标选择
+    var addIconBtn = document.getElementById('addIconBtn');
+    var addIconDropdown = document.getElementById('addIconDropdown');
+    var addIconInput = document.getElementById('addIconInput');
+    var addIconPreview = document.getElementById('addIconPreview');
+    
+    if (addIconBtn) {
+        addIconBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            addIconDropdown.classList.toggle('show');
+        });
+        
+        addIconDropdown.querySelectorAll('.icon-option').forEach(function(option) {
+            option.addEventListener('click', function() {
+                var icon = this.dataset.icon;
+                addIconInput.value = icon;
+                addIconPreview.innerHTML = '<i class="bi bi-' + icon + '"></i>';
+                addIconDropdown.querySelectorAll('.icon-option').forEach(function(o) {
+                    o.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                addIconDropdown.classList.remove('show');
+            });
+        });
+    }
+    
+    // 表格中的图标选择
+    document.querySelectorAll('.icon-trigger').forEach(function(trigger) {
+        trigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var dropdown = this.closest('.icon-wrapper').querySelector('.icon-dropdown');
+            // 关闭其他打开的下拉框
+            document.querySelectorAll('.icon-dropdown.show').forEach(function(d) {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+            dropdown.classList.toggle('show');
+        });
+    });
+    
+    document.querySelectorAll('.icon-dropdown .icon-option').forEach(function(option) {
+        option.addEventListener('click', function() {
+            var icon = this.dataset.icon;
+            var wrapper = this.closest('.icon-wrapper');
+            var input = wrapper.closest('form').querySelector('.icon-input');
+            var preview = wrapper.querySelector('.icon-trigger i');
+            
+            if (input) input.value = icon;
+            if (preview) preview.className = 'bi bi-' + icon;
+            
+            wrapper.querySelectorAll('.icon-option').forEach(function(o) {
+                o.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            wrapper.querySelector('.icon-dropdown').classList.remove('show');
+        });
+    });
+    
+    // 点击其他地方关闭下拉框
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.icon-dropdown.show').forEach(function(d) {
+            d.classList.remove('show');
+        });
+    });
+});
+</script>
 
 <?php include APP_PATH . '/views/admin/layout_footer.php'; ?>

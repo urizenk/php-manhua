@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
         $title = trim($_POST['title'] ?? '');
         $status = $_POST['status'] ?? null;
         $resourceLink = trim($_POST['resource_link'] ?? '');
+        $extractCode = trim($_POST['extract_code'] ?? '');
+        $mangaTags = trim($_POST['manga_tags'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $coverPosition = $_POST['cover_position'] ?? 'center';
         
@@ -74,6 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
             'type_id' => $typeId,
             'title' => $title,
             'resource_link' => $resourceLink,
+            'extract_code' => $extractCode,
+            'manga_tags' => $mangaTags,
             'description' => $description,
             'cover_position' => $coverPosition,
         ];
@@ -124,14 +128,22 @@ include APP_PATH . '/views/admin/layout_header.php';
 <style>
     .form-section {
         background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border: 1px solid #e9ecef;
     }
     .form-section-title {
         font-weight: bold;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         color: #495057;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title i {
+        color: #FF6B35;
     }
     .current-cover {
         max-width: 200px;
@@ -160,7 +172,7 @@ include APP_PATH . '/views/admin/layout_header.php';
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">编辑漫画信息 - ID: <?php echo $manga['id']; ?></h5>
+        <h5 class="mb-0"><i class="bi bi-pencil-square text-primary"></i> 编辑漫画信息 - ID: <?php echo $manga['id']; ?></h5>
     </div>
     <div class="card-body">
         <form method="POST" enctype="multipart/form-data" id="mangaForm">
@@ -168,7 +180,7 @@ include APP_PATH . '/views/admin/layout_header.php';
             
             <!-- 基本信息 -->
             <div class="form-section">
-                <div class="form-section-title">基本信息</div>
+                <div class="form-section-title"><i class="bi bi-info-circle"></i> 基本信息</div>
                 
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -187,7 +199,7 @@ include APP_PATH . '/views/admin/layout_header.php';
                     </div>
                     
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">所属标签</label>
+                        <label class="form-label">所属标签（板块标签）</label>
                         <select class="form-select" name="tag_id" id="tagSelect">
                             <option value="">选择标签（可选）</option>
                             <?php foreach ($tags as $tag): ?>
@@ -206,12 +218,20 @@ include APP_PATH . '/views/admin/layout_header.php';
                            value="<?php echo htmlspecialchars($manga['title']); ?>" 
                            placeholder="输入漫画标题">
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label">漫画标签</label>
+                    <input type="text" class="form-control" name="manga_tags" 
+                           value="<?php echo htmlspecialchars($manga['manga_tags'] ?? ''); ?>"
+                           placeholder="如：职场、单恋攻、哭包攻、美人受、做炸受">
+                    <small class="text-muted">漫画内容标签，多个用中文逗号分隔，显示在详情页</small>
+                </div>
             </div>
             
             <!-- 状态选择 -->
             <?php if ($manga['status']): ?>
             <div class="form-section" id="statusSection">
-                <div class="form-section-title">连载状态</div>
+                <div class="form-section-title"><i class="bi bi-flag"></i> 连载状态</div>
                 
                 <div class="mb-3">
                     <label class="form-label">状态</label>
@@ -226,7 +246,7 @@ include APP_PATH . '/views/admin/layout_header.php';
             
             <!-- 封面图片 -->
             <div class="form-section" id="coverSection">
-                <div class="form-section-title">封面图片</div>
+                <div class="form-section-title"><i class="bi bi-image"></i> 封面图片</div>
                 
                 <?php if ($manga['cover_image']): ?>
                 <div class="mb-3">
@@ -257,18 +277,32 @@ include APP_PATH . '/views/admin/layout_header.php';
             
             <!-- 资源链接 -->
             <div class="form-section">
-                <div class="form-section-title">资源信息</div>
+                <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源信息</div>
                 
-                <div class="mb-3">
-                    <label class="form-label">资源链接</label>
-                    <input type="url" class="form-control" name="resource_link" 
-                           value="<?php echo htmlspecialchars($manga['resource_link']); ?>"
-                           placeholder="https://pan.quark.cn/...">
-                    <small class="text-muted">网盘链接或其他资源地址</small>
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">资源链接</label>
+                        <input type="text" class="form-control" name="resource_link" 
+                               value="<?php echo htmlspecialchars($manga['resource_link']); ?>"
+                               placeholder="https://pan.baidu.com/...">
+                        <small class="text-muted">网盘链接或其他资源地址</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">提取码</label>
+                        <input type="text" class="form-control" name="extract_code" 
+                               value="<?php echo htmlspecialchars($manga['extract_code'] ?? ''); ?>"
+                               placeholder="如：1234">
+                        <small class="text-muted">网盘提取码（可选）</small>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- 简介 -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-file-text"></i> 简介</div>
                 
                 <div class="mb-3">
-                    <label class="form-label">简介/说明</label>
+                    <label class="form-label">漫画简介（可选）</label>
                     <textarea class="form-control" name="description" rows="4" 
                               placeholder="输入漫画简介或说明"><?php echo htmlspecialchars($manga['description']); ?></textarea>
                 </div>

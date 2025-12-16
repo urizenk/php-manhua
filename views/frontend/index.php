@@ -9,16 +9,23 @@ $db      = $GLOBALS['db'] ?? null;
 $session = $GLOBALS['session'] ?? null;
 $config  = $GLOBALS['config'] ?? null;
 
-$pageTitle = '欢迎来到海の小窝 🐋';
+$pageTitle = '欢迎来到海の小窝';
 
-// 从数据库读取微博配置
-$weiboConfig = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text')");
-$weiboSettings = [];
-foreach ($weiboConfig as $row) {
-    $weiboSettings[$row['config_key']] = $row['config_value'];
+// 从数据库读取配置
+$siteConfig = $db->query("SELECT config_key, config_value FROM site_config");
+$configSettings = [];
+foreach ($siteConfig as $row) {
+    $configSettings[$row['config_key']] = $row['config_value'];
 }
-$weiboUrl  = $weiboSettings['weibo_url'] ?? '#';
-$weiboText = $weiboSettings['weibo_text'] ?? '微博@资源小站';
+
+$siteName = $configSettings['site_name'] ?? '海の小窝';
+$siteDesc = $configSettings['site_desc'] ?? '无偿分享 · 禁止盗卖 · 更多精彩资源等你发现';
+$weiboUrl = $configSettings['weibo_url'] ?? '#';
+$weiboText = $configSettings['weibo_text'] ?? '微博@资源小站';
+$homepageRedirectUrl = $configSettings['homepage_redirect_url'] ?? '';
+
+// 使用首页跳转URL，如果没有设置则使用微博URL
+$jumpUrl = $homepageRedirectUrl ?: $weiboUrl;
 
 // 模块类型列表，用于动态渲染首页模块
 $types = $db ? $db->query('SELECT * FROM manga_types ORDER BY sort_order, id') : [];
@@ -26,23 +33,10 @@ $types = $db ? $db->query('SELECT * FROM manga_types ORDER BY sort_order, id') :
 // 当前访问码是否已通过验证
 $isAccessVerified = $session ? $session->isAccessVerified() : false;
 
-// 各模块的展示元数据（图标 + 描述）
-$moduleMeta = [
-    'korean_collection' => ['icon' => '📚', 'desc' => '精选韩漫作品'],
-    'daily_update'      => ['icon' => '📅', 'desc' => '每日更新资源'],
-    'short_complete'    => ['icon' => '✅', 'desc' => '短篇完结作品'],
-    'japan_recommend'   => ['icon' => '⭐', 'desc' => '精品日漫推荐'],
-    'japan_collection'  => ['icon' => '🎁', 'desc' => '日漫资源合集'],
-    'anime_collection'  => ['icon' => '🎬', 'desc' => '动画视频资源'],
-    'drama_collection'  => ['icon' => '🎧', 'desc' => '精彩广播剧'],
-    'feedback'          => ['icon' => '💬', 'desc' => '资源失效反馈'],
-    'backup_link'       => ['icon' => '📍', 'desc' => '备用访问地址'],
-];
-
 $customCss = '
 <style>
     body {
-        background: linear-gradient(135deg, #FFF5E6 0%, #FFE4CC 100%);
+        background: linear-gradient(135deg, #FFF8E1 0%, #FFE0B2 100%);
         min-height: 100vh;
     }
     .main-container {
@@ -59,7 +53,7 @@ $customCss = '
         box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
     }
     .welcome-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: bold;
         color: #ffffff;
         margin-bottom: 10px;
@@ -67,13 +61,13 @@ $customCss = '
     }
     .welcome-desc {
         color: rgba(255, 255, 255, 0.95);
-        font-size: 1.1rem;
+        font-size: 1rem;
         margin-bottom: 20px;
     }
     .weibo-btn {
         display: inline-block;
         margin-top: 10px;
-        padding: 10px 30px;
+        padding: 12px 35px;
         border-radius: 999px;
         border: 2px solid #fff;
         background: rgba(255, 255, 255, 0.15);
@@ -107,64 +101,73 @@ $customCss = '
     .module-card:hover {
         transform: translateY(-8px);
         border-color: #FF6B35;
-        box-shadow: 0 12px 30px rgba(255, 107, 53, 0.3);
+        box-shadow: 0 12px 30px rgba(255, 107, 53, 0.25);
         background: linear-gradient(135deg, #FFF5E6 0%, #ffffff 100%);
     }
     .module-icon {
         width: 70px;
         height: 70px;
         margin: 0 auto 15px;
-        border-radius: 20px;
+        border-radius: 16px;
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.2rem;
+        font-size: 1.8rem;
         color: #ffffff;
         box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
     }
     .module-title {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
         font-weight: bold;
         color: #333333;
         margin-bottom: 6px;
     }
     .module-desc {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #999999;
     }
 
     /* 移动端双列布局 */
     @media (max-width: 768px) {
         .main-container {
-            padding: 24px 14px;
+            padding: 20px 12px;
         }
         .welcome-card {
-            padding: 26px 18px;
+            padding: 24px 16px;
+            border-radius: 16px;
+            margin-bottom: 25px;
         }
         .welcome-title {
-            font-size: 1.9rem;
+            font-size: 1.6rem;
         }
         .welcome-desc {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+        }
+        .weibo-btn {
+            padding: 10px 28px;
+            font-size: 0.9rem;
         }
         .module-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
+            gap: 12px;
         }
         .module-card {
-            padding: 22px 10px;
+            padding: 20px 12px;
+            border-radius: 12px;
         }
         .module-icon {
-            width: 58px;
-            height: 58px;
-            font-size: 1.8rem;
+            width: 54px;
+            height: 54px;
+            font-size: 1.4rem;
+            border-radius: 12px;
+            margin-bottom: 12px;
         }
         .module-title {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
         }
         .module-desc {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
     }
 
@@ -222,13 +225,13 @@ $customCss = '
         padding: 26px 26px 32px;
     }
     .access-code-input {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         text-align: center;
         letter-spacing: 4px;
         border-radius: 10px;
         border: 2px solid #FFD4B8;
         padding: 14px;
-        background: #FFF5E6;
+        background: #FFF8E1;
     }
     .access-code-input:focus {
         border-color: #FF6B35;
@@ -238,18 +241,33 @@ $customCss = '
     .btn-access-submit {
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         border: none;
-        padding: 10px 34px;
+        padding: 12px 40px;
         font-size: 1.05rem;
         border-radius: 10px;
         box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        color: white;
     }
     .btn-access-submit:hover {
         background: linear-gradient(135deg, #FF6B35 0%, #FF5722 100%);
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        color: white;
     }
 </style>
 ';
+
+// 模块描述映射
+$moduleDescMap = [
+    'korean_collection' => '精选韩漫作品',
+    'daily_update'      => '每日更新资源',
+    'short_complete'    => '短篇完结作品',
+    'japan_recommend'   => '精品日漫推荐',
+    'japan_collection'  => '日漫资源合集',
+    'anime_collection'  => '动画视频资源',
+    'drama_collection'  => '精彩广播剧',
+    'feedback'          => '资源失效反馈',
+    'backup_link'       => '备用访问地址',
+];
 
 $customJs = '
 <script>
@@ -374,9 +392,9 @@ include APP_PATH . '/views/layouts/header.php';
 <div class="main-container">
     <!-- 欢迎卡片 -->
     <div class="welcome-card">
-        <h1 class="welcome-title">欢迎来到海の小窝🐋</h1>
-        <p class="welcome-desc">无偿分享 · 禁止盗卖 · 更多精彩资源等你发现</p>
-        <a href="<?php echo htmlspecialchars($weiboUrl); ?>" target="_blank" class="weibo-btn">
+        <h1 class="welcome-title">欢迎来到<?php echo htmlspecialchars($siteName); ?></h1>
+        <p class="welcome-desc"><?php echo htmlspecialchars($siteDesc); ?></p>
+        <a href="<?php echo htmlspecialchars($jumpUrl); ?>" target="_blank" class="weibo-btn">
             <?php echo htmlspecialchars($weiboText); ?>
         </a>
     </div>
@@ -389,18 +407,19 @@ include APP_PATH . '/views/layouts/header.php';
             <?php foreach ($types as $type): ?>
                 <?php
                     $code = $type['type_code'];
-                    $meta = $moduleMeta[$code] ?? ['icon' => '📖', 'desc' => '漫画资源模块'];
+                    $icon = $type['icon'] ?? 'book';
+                    $desc = $moduleDescMap[$code] ?? '漫画资源模块';
                     $url  = module_url($code);
                 ?>
                 <div class="module-card" data-url="<?php echo htmlspecialchars($url); ?>">
                     <div class="module-icon">
-                        <?php echo htmlspecialchars($meta['icon']); ?>
+                        <i class="bi bi-<?php echo htmlspecialchars($icon); ?>"></i>
                     </div>
                     <div class="module-title">
                         <?php echo htmlspecialchars($type['type_name']); ?>
                     </div>
                     <div class="module-desc">
-                        <?php echo htmlspecialchars($meta['desc']); ?>
+                        <?php echo htmlspecialchars($desc); ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -420,13 +439,13 @@ include APP_PATH . '/views/layouts/header.php';
                 <input type="text"
                        class="form-control access-code-input"
                        id="accessCode"
-                       placeholder="输入密码，不会就看下方取码教程">
+                       placeholder="输入访问码">
             </div>
             <div class="text-center mb-3">
                 <button type="button" class="btn btn-primary btn-access-submit" id="verifyBtn">提交</button>
             </div>
             <div class="text-center">
-                <p class="text-muted small mb-2">🎉 取码教程</p>
+                <p class="text-muted small mb-2">取码教程</p>
                 <p class="text-muted small mb-1">关注主页即可获取每日访问码</p>
             </div>
         </div>

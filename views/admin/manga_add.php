@@ -30,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
         $title        = trim($_POST['title'] ?? '');
         $status       = $_POST['status'] ?? '';
         $resourceLink = trim($_POST['resource_link'] ?? '');
+        $extractCode  = trim($_POST['extract_code'] ?? '');
+        $mangaTags    = trim($_POST['manga_tags'] ?? '');
         $description  = trim($_POST['description'] ?? '');
 
         $errors = [];
@@ -59,6 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
                 'type_id'       => $typeId,
                 'title'         => $title,
                 'resource_link' => $resourceLink,
+                'extract_code'  => $extractCode,
+                'manga_tags'    => $mangaTags,
                 'description'   => $description,
             ];
 
@@ -97,19 +101,48 @@ include APP_PATH . '/views/admin/layout_header.php';
 <style>
     .form-section {
         background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border: 1px solid #e9ecef;
     }
     .form-section-title {
         font-weight: bold;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         color: #495057;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title i {
+        color: #FF6B35;
     }
     #imagePreview img {
         max-width: 300px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .form-tips {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 12px 15px;
+        margin-bottom: 20px;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.9rem;
+        color: #856404;
+    }
+    .preview-card {
+        background: #fff;
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .preview-title {
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 15px;
     }
 </style>
 
@@ -132,7 +165,7 @@ include APP_PATH . '/views/admin/layout_header.php';
 
 <div class="card">
     <div class="card-header">
-        <h5 class="mb-0">漫画信息</h5>
+        <h5 class="mb-0"><i class="bi bi-plus-circle text-primary"></i> 漫画信息</h5>
     </div>
     <div class="card-body">
         <form method="POST" enctype="multipart/form-data" id="mangaForm">
@@ -140,7 +173,7 @@ include APP_PATH . '/views/admin/layout_header.php';
 
             <!-- 基本信息 -->
             <div class="form-section">
-                <div class="form-section-title">基本信息</div>
+                <div class="form-section-title"><i class="bi bi-info-circle"></i> 基本信息</div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -158,7 +191,7 @@ include APP_PATH . '/views/admin/layout_header.php';
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">所属标签</label>
+                        <label class="form-label">所属标签（板块标签）</label>
                         <select class="form-select" name="tag_id" id="tagSelect">
                             <option value="">选择标签（可选）</option>
                         </select>
@@ -172,11 +205,17 @@ include APP_PATH . '/views/admin/layout_header.php';
                     <label class="form-label">漫画标题 <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" name="title" required placeholder="输入漫画标题">
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label">漫画标签</label>
+                    <input type="text" class="form-control" name="manga_tags" placeholder="如：职场、单恋攻、哭包攻、美人受、做炸受">
+                    <small class="text-muted">漫画内容标签，多个用中文逗号分隔，显示在详情页</small>
+                </div>
             </div>
 
             <!-- 状态选择（仅韩漫等需要） -->
             <div class="form-section" id="statusSection" style="display:none;">
-                <div class="form-section-title">连载状态</div>
+                <div class="form-section-title"><i class="bi bi-flag"></i> 连载状态</div>
 
                 <div class="mb-3">
                     <label class="form-label">状态</label>
@@ -190,7 +229,7 @@ include APP_PATH . '/views/admin/layout_header.php';
 
             <!-- 封面图片 -->
             <div class="form-section" id="coverSection" style="display:none;">
-                <div class="form-section-title">封面图片</div>
+                <div class="form-section-title"><i class="bi bi-image"></i> 封面图片</div>
 
                 <div class="mb-3">
                     <label class="form-label">上传封面</label>
@@ -203,24 +242,30 @@ include APP_PATH . '/views/admin/layout_header.php';
 
             <!-- 资源链接 -->
             <div class="form-section">
-                <div class="form-section-title">资源链接</div>
+                <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
 
-                <div class="mb-3">
-                    <label class="form-label">资源链接</label>
-                    <textarea class="form-control" name="resource_link" rows="4"
-                              placeholder="输入资源链接&#10;多个链接请换行输入"></textarea>
-                    <small class="text-muted">如百度网盘、阿里云盘等分享链接</small>
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">资源链接</label>
+                        <input type="text" class="form-control" name="resource_link" placeholder="输入资源链接URL">
+                        <small class="text-muted">如百度网盘、阿里云盘等分享链接</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">提取码</label>
+                        <input type="text" class="form-control" name="extract_code" placeholder="如：1234">
+                        <small class="text-muted">网盘提取码（可选）</small>
+                    </div>
                 </div>
             </div>
 
             <!-- 简介 -->
             <div class="form-section">
-                <div class="form-section-title">简介</div>
+                <div class="form-section-title"><i class="bi bi-file-text"></i> 简介</div>
 
                 <div class="mb-3">
                     <label class="form-label">漫画简介（可选）</label>
-                    <textarea class="form-control" name="description" rows="3"
-                              placeholder="输入漫画简介"></textarea>
+                    <textarea class="form-control" name="description" rows="4"
+                              placeholder="输入漫画简介，将显示在详情页"></textarea>
                 </div>
             </div>
 
@@ -234,7 +279,7 @@ include APP_PATH . '/views/admin/layout_header.php';
             </div>
         </form>
     </div>
-    </div>
+</div>
 
 <?php
 $customJs = '
@@ -268,9 +313,9 @@ $(document).ready(function() {
                 data: { type_id: typeId },
                 dataType: "json",
                 success: function(tags) {
-                    var options = "<option value=\\\"\\\">选择标签（可选）</option>";
+                    var options = "<option value=\"\">选择标签（可选）</option>";
                     tags.forEach(function(tag) {
-                        options += "<option value=\\\"" + tag.id + "\\\">" + tag.tag_name + "</option>";
+                        options += "<option value=\"" + tag.id + "\">" + tag.tag_name + "</option>";
                     });
                     $("#tagSelect").html(options);
                 }
@@ -279,12 +324,12 @@ $(document).ready(function() {
     });
 
     // 图片预览
-    $("input[name=\\\"cover_image\\\"]").change(function() {
+    $("input[name=\"cover_image\"]").change(function() {
         var file = this.files[0];
         if (file) {
             var reader = new FileReader();
             reader.onload = function(e) {
-                $("#imagePreview").html("<img src=\\\"" + e.target.result + "\\\" style=\\\"max-width: 300px; border-radius: 8px;\\\">");
+                $("#imagePreview").html("<img src=\"" + e.target.result + "\" style=\"max-width: 300px; border-radius: 8px;\">");
             };
             reader.readAsDataURL(file);
         }
@@ -312,7 +357,7 @@ $(document).ready(function() {
                 dataType: "json",
                 success: function(res) {
                     if (res.success) {
-                        var option = "<option value=\\\"" + res.tag_id + "\\\" selected>" + tagName + "</option>";
+                        var option = "<option value=\"" + res.tag_id + "\" selected>" + tagName + "</option>";
                         $("#tagSelect").append(option);
                         alert("标签创建成功");
                     } else {
