@@ -4,6 +4,12 @@
  * 负责初始化环境并注册前台路由
  */
 
+// ========== 调试模式 - 排查完问题后删除这3行 ==========
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+// =====================================================
+
 // 定义应用根目录
 define('APP_PATH', dirname(__DIR__));
 
