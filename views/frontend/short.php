@@ -1,7 +1,7 @@
 <?php
 /**
  * F4-完结短漫模块
- * 字母标签（A/B/C...）→ 漫画列表 → 详情页
+ * 按板块标签分类显示漫画列表
  */
 
 // 从 GLOBALS 获取变量
@@ -12,215 +12,215 @@ $config = $GLOBALS['config'] ?? null;
 $pageTitle = '完结短漫 - 海の小窝';
 
 // 获取完结短漫的类型ID
-$shortType = $db->queryOne("SELECT * FROM manga_types WHERE type_code = ?", ['short_complete']);
-if (!$shortType) {
+$moduleType = $db->queryOne("SELECT * FROM manga_types WHERE type_code = ?", ['short_complete']);
+if (!$moduleType) {
     echo "完结短漫配置错误";
     exit;
 }
 
-// 获取当前选中的字母
-$selectedLetter = $_GET['letter'] ?? 'all';
+$moduleName = $moduleType['type_name'];
 
-// 获取所有字母标签（按字母顺序）
+// 获取搜索关键词
+$keyword = $_GET['keyword'] ?? '';
+
+// 获取该板块下的所有标签（按排序）
 $tags = $db->query(
-    "SELECT * FROM tags WHERE type_id = ? AND tag_type = 'letter' ORDER BY tag_name ASC",
-    [$shortType['id']]
+    "SELECT * FROM tags WHERE type_id = ? ORDER BY sort_order, id",
+    [$moduleType['id']]
 );
 
 // 构建查询条件
 $where = "m.type_id = ?";
-$params = [$shortType['id']];
+$params = [$moduleType['id']];
 
-if ($selectedLetter !== 'all') {
-    $where .= " AND t.tag_name = ?";
-    $params[] = $selectedLetter;
+if ($keyword) {
+    $escapedKeyword = addcslashes($keyword, '%_');
+    $where .= " AND m.title LIKE ?";
+    $params[] = "%{$escapedKeyword}%";
 }
 
-// 获取完结短漫列表
+// 获取漫画列表
 $mangas = $db->query(
     "SELECT m.*, t.tag_name 
      FROM mangas m 
      LEFT JOIN tags t ON m.tag_id = t.id 
      WHERE {$where}
-     ORDER BY t.tag_name ASC, m.title ASC",
+     ORDER BY m.sort_order DESC, m.created_at DESC",
     $params
 );
 
-// 按字母分组
-$mangasByLetter = [];
+// 按标签分组
+$groupedMangas = [];
+$untaggedMangas = [];
+
 foreach ($mangas as $manga) {
-    $letter = $manga['tag_name'] ?? '其他';
-    if (!isset($mangasByLetter[$letter])) {
-        $mangasByLetter[$letter] = [];
+    $tagId = $manga['tag_id'] ?? 0;
+    $tagName = $manga['tag_name'] ?? '';
+    
+    if ($tagId && $tagName) {
+        if (!isset($groupedMangas[$tagId])) {
+            $groupedMangas[$tagId] = [
+                'tag_name' => $tagName,
+                'mangas' => []
+            ];
+        }
+        $groupedMangas[$tagId]['mangas'][] = $manga;
+    } else {
+        $untaggedMangas[] = $manga;
     }
-    $mangasByLetter[$letter][] = $manga;
 }
+
+// 按标签排序重新整理分组顺序
+$sortedGroups = [];
+foreach ($tags as $tag) {
+    if (isset($groupedMangas[$tag['id']])) {
+        $sortedGroups[$tag['id']] = $groupedMangas[$tag['id']];
+    }
+}
+// 添加未分类的
+if (!empty($untaggedMangas)) {
+    $sortedGroups[0] = [
+        'tag_name' => '未分类',
+        'mangas' => $untaggedMangas
+    ];
+}
+$groupedMangas = $sortedGroups;
 
 $customCss = '
 <style>
+    body {
+        background: #FFF8DC;
+        min-height: 100vh;
+    }
     .content-wrapper {
-        max-width: 1200px;
+        max-width: 800px;
         margin: 0 auto;
-        padding: 30px 20px;
+        padding: 20px 15px;
     }
     .page-header {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 30px;
-        text-align: center;
+        margin-bottom: 20px;
     }
     .page-title {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1976D2;
-        margin-bottom: 10px;
-    }
-    .page-subtitle {
-        color: #666;
-        font-size: 1rem;
-    }
-    .letter-filter {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 30px;
-    }
-    .filter-label {
+        font-size: 1.5rem;
         font-weight: bold;
         color: #333;
         margin-bottom: 15px;
-        display: block;
-        text-align: center;
     }
-    .letter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        gap: 10px;
-    }
-    .letter-btn {
-        padding: 12px 10px;
-        border-radius: 10px;
-        background: #f0f0f0;
-        color: #666;
-        text-decoration: none;
-        text-align: center;
-        font-weight: bold;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-        display: block;
-    }
-    .letter-btn:hover {
-        background: #1976D2;
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
-    }
-    .letter-btn.active {
-        background: #1976D2;
-        color: white;
-        box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
-    }
-    .letter-section {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 25px;
-    }
-    .letter-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-    .letter-icon {
-        width: 50px;
-        height: 50px;
-        background: #1976D2;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: bold;
-        margin-right: 15px;
-    }
-    .letter-name {
-        font-size: 1.3rem;
-        font-weight: bold;
-        color: #333;
-    }
-    .letter-count {
-        margin-left: auto;
-        background: #1976D2;
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-    }
-    .manga-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
-    }
-    .manga-item {
-        padding: 15px;
-        border: 2px solid #f0f0f0;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        background: #fafafa;
-    }
-    .manga-item:hover {
-        border-color: #1976D2;
-        background: white;
-        transform: translateX(5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    .manga-link {
-        text-decoration: none;
-        color: #333;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .manga-link:hover {
-        color: #1976D2;
-    }
-    .manga-title {
-        flex: 1;
-        font-weight: 500;
-    }
-    .manga-icon {
-        color: #999;
-        font-size: 0.9rem;
-        margin-left: 10px;
+    .tip-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 10px 12px;
+        margin-bottom: 15px;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.85rem;
+        color: #856404;
     }
     .back-btn {
-        background: white;
-        color: #1976D2;
-        border: 2px solid #1976D2;
-        border-radius: 25px;
-        padding: 10px 30px;
-        font-weight: bold;
-        text-decoration: none;
         display: inline-block;
+        background: #FF6B35;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
         transition: all 0.3s ease;
     }
     .back-btn:hover {
-        background: #1976D2;
+        background: #e55a28;
         color: white;
+        transform: translateY(-2px);
+    }
+    .search-box {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        outline: none;
+        background: white;
+    }
+    .search-input:focus {
+        border-color: #FF6B35;
+    }
+    .search-btn {
+        padding: 10px 25px;
+        background: #ffc107;
+        color: #333;
+        border: none;
+        border-radius: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .search-btn:hover {
+        background: #e0a800;
+    }
+    .tag-badge {
+        display: inline-block;
+        background: #ffc107;
+        color: #333;
+        padding: 6px 18px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin: 20px 0 10px 0;
+    }
+    .tag-badge:first-of-type {
+        margin-top: 0;
+    }
+    .manga-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+    .manga-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #e8e8e8;
+    }
+    .manga-item:last-child {
+        border-bottom: none;
+    }
+    .manga-link {
+        text-decoration: none;
+        color: #2196F3;
+        font-size: 0.95rem;
+        transition: color 0.2s ease;
+    }
+    .manga-link:hover {
+        color: #1565C0;
+        text-decoration: underline;
     }
     .empty-state {
         text-align: center;
-        padding: 60px 20px;
+        padding: 40px 20px;
         color: #999;
     }
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
+    .bottom-back {
+        text-align: center;
+        margin-top: 30px;
+        padding-bottom: 20px;
+    }
+    .bottom-back-btn {
+        display: inline-block;
+        background: white;
+        color: #FF6B35;
+        border: 2px solid #FF6B35;
+        padding: 10px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .bottom-back-btn:hover {
+        background: #FF6B35;
+        color: white;
     }
 </style>
 ';
@@ -231,85 +231,56 @@ include APP_PATH . '/views/layouts/header.php';
 <div class="content-wrapper">
     <!-- 页面头部 -->
     <div class="page-header">
-        <h1 class="page-title">🏅 完结短漫</h1>
-        <p class="page-subtitle">短篇完结作品 · 按字母分类查看</p>
-    </div>
-
-    <!-- 字母筛选 -->
-    <div class="letter-filter">
-        <label class="filter-label">🔤 选择字母</label>
-        <div class="letter-grid">
-            <a href="?" class="letter-btn <?php echo $selectedLetter === 'all' ? 'active' : ''; ?>">
-                全部
-            </a>
-            <?php foreach ($tags as $tag): ?>
-                <a href="?letter=<?php echo urlencode($tag['tag_name']); ?>" 
-                   class="letter-btn <?php echo $selectedLetter === $tag['tag_name'] ? 'active' : ''; ?>">
-                    <?php echo htmlspecialchars($tag['tag_name']); ?>
-                </a>
-            <?php endforeach; ?>
+        <h1 class="page-title"><?php echo htmlspecialchars($moduleName); ?></h1>
+        
+        <!-- Tip提示框 -->
+        <div class="tip-box">
+            Tip：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新增漫画！
         </div>
+        
+        <!-- 返回按钮 -->
+        <a href="/" class="back-btn">
+            <i class="bi bi-arrow-left"></i> 回到目录
+        </a>
+        
+        <!-- 搜索框 -->
+        <form method="GET" class="search-box">
+            <input type="text" 
+                   name="keyword" 
+                   class="search-input" 
+                   placeholder="漫名不用打全称，用关键词搜索..." 
+                   value="<?php echo htmlspecialchars($keyword); ?>">
+            <button type="submit" class="search-btn">查看</button>
+        </form>
     </div>
 
-    <?php if (empty($mangasByLetter)): ?>
-        <!-- 空状态 -->
-        <div class="letter-section">
-            <div class="empty-state">
-                <div class="empty-icon">📭</div>
-                <h3>暂无完结短漫</h3>
-                <p class="text-muted">试试选择其他字母分类</p>
-            </div>
+    <!-- 漫画列表 -->
+    <?php if (empty($mangas)): ?>
+        <div class="empty-state">
+            <h3>暂无符合条件的漫画</h3>
+            <p>试试调整搜索关键词</p>
         </div>
     <?php else: ?>
-        <!-- 按字母展示 -->
-        <?php 
-        // 获取排序后的字母
-        $letters = array_keys($mangasByLetter);
-        sort($letters);
         
-        foreach ($letters as $letter): 
-            if (!isset($mangasByLetter[$letter]) || empty($mangasByLetter[$letter])) continue;
-        ?>
-            <div class="letter-section">
-                <div class="letter-header">
-                    <div class="letter-icon"><?php echo htmlspecialchars($letter); ?></div>
-                    <span class="letter-name"><?php echo htmlspecialchars($letter); ?> 字母分类</span>
-                    <span class="letter-count"><?php echo count($mangasByLetter[$letter]); ?> 本</span>
-                </div>
-                <div class="manga-list">
-                    <?php foreach ($mangasByLetter[$letter] as $manga): ?>
-                        <div class="manga-item">
-                            <?php if ($manga['resource_link']): ?>
-                                <a href="<?php echo htmlspecialchars($manga['resource_link']); ?>" 
-                                   target="_blank" 
-                                   class="manga-link">
-                                    <span class="manga-title">
-                                        <?php echo htmlspecialchars($manga['title']); ?>
-                                    </span>
-                                    <span class="manga-icon">
-                                        <i class="bi bi-box-arrow-up-right"></i>
-                                    </span>
-                                </a>
-                            <?php else: ?>
-                                <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
-                                    <span class="manga-title">
-                                        <?php echo htmlspecialchars($manga['title']); ?>
-                                    </span>
-                                    <span class="manga-icon">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </span>
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
+        <!-- 按标签分组显示 -->
+        <?php foreach ($groupedMangas as $tagId => $group): ?>
+            <div class="tag-badge"><?php echo htmlspecialchars($group['tag_name']); ?></div>
+            <ul class="manga-list">
+                <?php foreach ($group['mangas'] as $manga): ?>
+                    <li class="manga-item">
+                        <a href="/detail/<?php echo $manga['id']; ?>" class="manga-link">
+                            <?php echo htmlspecialchars($manga['title']); ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         <?php endforeach; ?>
+        
     <?php endif; ?>
 
     <!-- 返回按钮 -->
-    <div class="text-center mt-4">
-        <a href="/" class="back-btn">
+    <div class="bottom-back">
+        <a href="/" class="bottom-back-btn">
             <i class="bi bi-arrow-left"></i> 返回首页
         </a>
     </div>
