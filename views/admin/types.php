@@ -281,60 +281,114 @@ include APP_PATH . '/views/admin/layout_header.php';
         <h5 class="mb-0"><i class="bi bi-plus-circle text-primary"></i> 添加新模块</h5>
     </div>
     <div class="card-body">
-        <form method="POST" class="row g-3">
+        <form method="POST">
             <?php echo $session->csrfField(); ?>
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="icon" id="addIconInput" value="book">
 
-            <div class="col-md-3">
-                <label class="form-label">模块名称</label>
-                <input type="text" name="type_name" class="form-control" placeholder="如：日更板块" required>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">类型代码</label>
-                <input type="text" name="type_code" class="form-control" placeholder="如：daily_update" required>
-                <small class="text-muted">用于程序识别，建议使用英文+下划线</small>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">模块图标</label>
-                <div class="icon-wrapper">
-                    <div class="icon-select-btn" id="addIconBtn">
-                        <div class="icon-preview" id="addIconPreview">
-                            <i class="bi bi-book"></i>
+            <div class="add-form-grid">
+                <div class="form-item">
+                    <label class="form-label">模块名称 <span class="text-danger">*</span></label>
+                    <input type="text" name="type_name" class="form-control" placeholder="如：日更板块" required>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">类型代码 <span class="text-danger">*</span></label>
+                    <input type="text" name="type_code" class="form-control" placeholder="如：daily_update" required>
+                    <small class="text-muted">英文+下划线</small>
+                </div>
+                <div class="form-item">
+                    <label class="form-label">模块图标</label>
+                    <div class="icon-wrapper">
+                        <div class="icon-select-btn" id="addIconBtn">
+                            <div class="icon-preview" id="addIconPreview">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <span>选择</span>
                         </div>
-                        <span>选择图标</span>
-                    </div>
-                    <div class="icon-dropdown" id="addIconDropdown">
-                        <div class="icon-selector">
-                            <?php foreach ($availableIcons as $iconName => $iconLabel): ?>
-                                <div class="icon-option <?php echo $iconName === 'book' ? 'selected' : ''; ?>" 
-                                     data-icon="<?php echo $iconName; ?>" 
-                                     title="<?php echo $iconLabel; ?>">
-                                    <i class="bi bi-<?php echo $iconName; ?>"></i>
-                                </div>
-                            <?php endforeach; ?>
+                        <div class="icon-dropdown" id="addIconDropdown">
+                            <div class="icon-selector">
+                                <?php foreach ($availableIcons as $iconName => $iconLabel): ?>
+                                    <div class="icon-option <?php echo $iconName === 'book' ? 'selected' : ''; ?>" 
+                                         data-icon="<?php echo $iconName; ?>" 
+                                         title="<?php echo $iconLabel; ?>">
+                                        <i class="bi bi-<?php echo $iconName; ?>"></i>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">排序</label>
-                <input type="number" name="sort_order" class="form-control" value="0">
-            </div>
-            <div class="col-md-1 d-flex align-items-center">
-                <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" name="need_status" id="addNeedStatus">
-                    <label class="form-check-label" for="addNeedStatus">状态</label>
+                <div class="form-item form-item-small">
+                    <label class="form-label">排序</label>
+                    <input type="number" name="sort_order" class="form-control" value="0">
                 </div>
-            </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-plus"></i> 添加
-                </button>
+                <div class="form-item form-item-check">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="need_status" id="addNeedStatus">
+                        <label class="form-check-label" for="addNeedStatus">需要状态</label>
+                    </div>
+                    <small class="text-muted">连载/完结</small>
+                </div>
+                <div class="form-item form-item-btn">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> 添加模块
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+.add-form-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+.form-item {
+    flex: 1;
+    min-width: 180px;
+}
+.form-item-small {
+    flex: 0 0 80px;
+    min-width: 80px;
+}
+.form-item-check {
+    flex: 0 0 100px;
+    min-width: 100px;
+    padding-bottom: 5px;
+}
+.form-item-btn {
+    flex: 0 0 auto;
+}
+.form-item .form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+}
+.form-item .form-control {
+    height: 42px;
+}
+.form-item-btn .btn {
+    height: 42px;
+    padding: 0 20px;
+    white-space: nowrap;
+}
+@media (max-width: 768px) {
+    .add-form-grid {
+        flex-direction: column;
+    }
+    .form-item, .form-item-small, .form-item-check, .form-item-btn {
+        flex: 1 1 100%;
+        min-width: 100%;
+    }
+    .form-item-btn .btn {
+        width: 100%;
+    }
+}
+</style>
 
 <!-- 模块列表 -->
 <div class="card">
