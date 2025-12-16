@@ -4,11 +4,30 @@
  * 负责初始化环境并注册后台路由
  */
 
-// ========== 调试模式 - 排查完问题后删除这3行 ==========
+// ========== 调试模式 ==========
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-// =====================================================
+
+// 设置自定义错误处理器
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    echo "<pre style='background:#ffcccc;padding:10px;'>";
+    echo "<b>PHP Error [$errno]:</b> $errstr<br>";
+    echo "<b>File:</b> $errfile<br>";
+    echo "<b>Line:</b> $errline<br>";
+    echo "</pre>";
+    return false;
+});
+
+set_exception_handler(function($e) {
+    echo "<pre style='background:#ffcccc;padding:10px;'>";
+    echo "<b>Exception:</b> " . $e->getMessage() . "<br>";
+    echo "<b>File:</b> " . $e->getFile() . "<br>";
+    echo "<b>Line:</b> " . $e->getLine() . "<br>";
+    echo "<b>Trace:</b><br>" . $e->getTraceAsString();
+    echo "</pre>";
+});
+// =============================
 
 // 定义应用根目录
 define('APP_PATH', dirname(dirname(__DIR__)));
