@@ -41,25 +41,22 @@ $customCss = '
         box-sizing: border-box;
     }
     body {
-        font-family: "Poppins", "Microsoft YaHei", Arial, sans-serif;
-        background-color: #FFF8DC;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        font-family: "Poppins", "Microsoft YaHei", Arial, sans-serif !important;
+        background-color: #FFF8DC !important;
+        margin: 0 !important;
+        padding: 10px !important;
         min-height: 100vh;
-        min-height: 100dvh; /* 动态视口高度，适配移动端 */
+        min-height: 100dvh;
     }
-    .container {
+    .home-container {
         text-align: center;
-        width: 92%;
+        width: 100%;
         max-width: 500px;
         background-color: white;
-        padding: clamp(20px, 5vw, 30px) clamp(15px, 4vw, 25px);
+        padding: 20px 15px;
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        margin: 15px auto;
+        margin: 0 auto;
     }
     .page-title {
         font-size: clamp(1.5rem, 5vw, 1.8rem);
@@ -258,8 +255,10 @@ $customCss = '
     
     /* 响应式调整 */
     @media screen and (max-width: 360px) {
-        .container {
-            width: 95%;
+        body {
+            padding: 8px !important;
+        }
+        .home-container {
             padding: 15px 12px;
         }
         .category-nav {
@@ -274,18 +273,19 @@ $customCss = '
     /* 针对特殊屏幕高度（如iPhone SE） */
     @media screen and (max-height: 600px) {
         body {
-            align-items: flex-start;
-            padding-top: 10px;
+            padding-top: 5px !important;
         }
-        .container {
-            margin: 10px auto;
+        .home-container {
+            margin: 5px auto;
         }
     }
     
     /* 安全区域适配（iPhone X等刘海屏） */
     @supports (padding: max(0px)) {
-        .container {
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        body {
+            padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+            padding-left: max(10px, env(safe-area-inset-left)) !important;
+            padding-right: max(10px, env(safe-area-inset-right)) !important;
         }
         .access-modal {
             padding-bottom: env(safe-area-inset-bottom);
@@ -436,7 +436,7 @@ $customJs = '
 include APP_PATH . '/views/layouts/header.php';
 ?>
 
-<div class="container">
+<div class="home-container">
     <h1 class="page-title">欢迎来到<?php echo htmlspecialchars($siteName); ?></h1>
     
     <!-- 标题下的提示语 -->
