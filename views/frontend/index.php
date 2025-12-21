@@ -23,8 +23,8 @@ $siteDesc = $configSettings['site_desc'] ?? '无偿分享 · 禁止盗卖 · 更
 $weiboUrl = $configSettings['weibo_url'] ?? '#';
 $weiboText = $configSettings['weibo_text'] ?? '微博@资源小站';
 $homepageRedirectUrl = $configSettings['homepage_redirect_url'] ?? '';
-$accessCodeUrl = $configSettings['access_code_url'] ?? '';
-$accessCodeTutorial = $configSettings['access_code_tutorial'] ?? '关注主页即可获取每日访问码';
+$accessCodeUrls = json_decode($configSettings['access_code_urls'] ?? '[]', true) ?: [];
+$accessCodeTutorial = $configSettings['access_code_tutorial'] ?? '';
 
 // 使用首页跳转URL，如果没有设置则使用微博URL
 $jumpUrl = $homepageRedirectUrl ?: $weiboUrl;
@@ -235,17 +235,36 @@ $customCss = '
     .access-tips p {
         margin: 8px 0;
     }
-    .btn-get-code {
-        display: inline-block;
+    .tutorial-text {
+        background: #FFF8E1;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        line-height: 1.6;
+        color: #5D4037;
+        font-size: 0.9rem;
+        text-align: left;
+        border-left: 3px solid #FFB74D;
+    }
+    .get-code-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
         margin-top: 10px;
-        padding: 10px 20px;
+    }
+    .btn-get-code {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 10px 18px;
         background: #FFF3E0;
         color: #E65100;
         border: 2px solid #FFB74D;
         border-radius: 25px;
         text-decoration: none;
         font-weight: bold;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         transition: all 0.3s ease;
     }
     .btn-get-code:hover, .btn-get-code:active {
@@ -492,14 +511,26 @@ include APP_PATH . '/views/layouts/header.php';
                    autocomplete="off"
                    inputmode="text">
             <button type="button" class="btn-access-submit" id="verifyBtn">提交</button>
+            
+            <?php if ($accessCodeTutorial || !empty($accessCodeUrls)): ?>
             <div class="access-tips">
-                <p><?php echo htmlspecialchars($accessCodeTutorial); ?></p>
-                <?php if ($accessCodeUrl): ?>
-                    <a href="<?php echo htmlspecialchars($accessCodeUrl); ?>" target="_blank" class="btn-get-code">
-                        <i class="bi bi-box-arrow-up-right"></i> 点击获取访问码
-                    </a>
+                <?php if ($accessCodeTutorial): ?>
+                    <div class="tutorial-text"><?php echo nl2br(htmlspecialchars($accessCodeTutorial)); ?></div>
+                <?php endif; ?>
+                
+                <?php if (!empty($accessCodeUrls)): ?>
+                    <div class="get-code-links">
+                        <?php foreach ($accessCodeUrls as $urlItem): ?>
+                            <?php if (!empty($urlItem['url'])): ?>
+                                <a href="<?php echo htmlspecialchars($urlItem['url']); ?>" target="_blank" class="btn-get-code">
+                                    <i class="bi bi-box-arrow-up-right"></i> <?php echo htmlspecialchars($urlItem['name'] ?: '获取访问码'); ?>
+                                </a>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

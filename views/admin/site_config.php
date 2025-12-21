@@ -83,21 +83,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
                 );
             }
             
-            // 更新访问码获取URL
-            if (isset($_POST['access_code_url'])) {
+            // 更新访问码获取地址（多个，JSON格式）
+            if (isset($_POST['access_code_urls']) && is_array($_POST['access_code_urls'])) {
+                $urls = [];
+                $names = $_POST['access_code_names'] ?? [];
+                foreach ($_POST['access_code_urls'] as $i => $url) {
+                    $url = trim($url);
+                    $name = trim($names[$i] ?? '');
+                    if ($url) {
+                        $urls[] = ['name' => $name ?: '获取地址', 'url' => $url];
+                    }
+                }
+                $urlsJson = json_encode($urls, JSON_UNESCAPED_UNICODE);
                 $db->execute(
                     "INSERT INTO site_config (config_key, config_value, description) 
-                     VALUES ('access_code_url', ?, '访问码获取地址') 
+                     VALUES ('access_code_urls', ?, '访问码获取地址列表') 
                      ON DUPLICATE KEY UPDATE config_value = ?",
-                    [$_POST['access_code_url'], $_POST['access_code_url']]
+                    [$urlsJson, $urlsJson]
                 );
             }
             
-            // 更新访问码获取提示
+            // 更新访问码获取教程
             if (isset($_POST['access_code_tutorial'])) {
                 $db->execute(
                     "INSERT INTO site_config (config_key, config_value, description) 
-                     VALUES ('access_code_tutorial', ?, '访问码获取提示') 
+                     VALUES ('access_code_tutorial', ?, '访问码获取教程') 
                      ON DUPLICATE KEY UPDATE config_value = ?",
                     [$_POST['access_code_tutorial'], $_POST['access_code_tutorial']]
                 );
@@ -129,8 +139,8 @@ $siteDesc = $configs['site_desc'] ?? '无偿分享 禁止盗卖 更多精彩';
 $weiboUrl = $configs['weibo_url'] ?? 'https://weibo.com/';
 $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
 $homepageRedirectUrl = $configs['homepage_redirect_url'] ?? '';
-$accessCodeUrl = $configs['access_code_url'] ?? '';
-$accessCodeTutorial = $configs['access_code_tutorial'] ?? '关注主页即可获取每日访问码';
+$accessCodeUrls = json_decode($configs['access_code_urls'] ?? '[]', true) ?: [];
+$accessCodeTutorial = $configs['access_code_tutorial'] ?? '';
 
 ?>
 
@@ -321,24 +331,64 @@ $accessCodeTutorial = $configs['access_code_tutorial'] ?? '关注主页即可获
                     </div>
                     
                     <div class="mb-3">
-                        <label for="access_code_url" class="form-label">访问码获取地址</label>
-                        <input type="url" class="form-control" id="access_code_url" name="access_code_url" 
-                               value="<?php echo htmlspecialchars($accessCodeUrl); ?>"
-                               placeholder="https://weibo.com/xxx">
-                        <div class="help-text">用户点击"获取访问码"后跳转的地址（如微博主页），留空则不显示获取链接</div>
-                        <?php if ($accessCodeUrl): ?>
-                            <a href="<?php echo htmlspecialchars($accessCodeUrl); ?>" target="_blank" class="btn btn-sm btn-outline-info mt-2">
-                                <i class="bi bi-box-arrow-up-right"></i> 测试链接
-                            </a>
-                        <?php endif; ?>
+                        <label class="form-label">访问码获取地址 <span class="text-muted">(可选，支持多个)</span></label>
+                        <div id="access-code-urls-container">
+                            <?php if (empty($accessCodeUrls)): ?>
+                                <div class="url-item mb-2">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-md-3">
+                                            <input type="text" class="form-control form-control-sm" name="access_code_names[]" placeholder="按钮文字">
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="url" class="form-control form-control-sm" name="access_code_urls[]" placeholder="https://weibo.com/xxx">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-url-btn">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($accessCodeUrls as $urlItem): ?>
+                                    <div class="url-item mb-2">
+                                        <div class="row g-2 align-items-center">
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control form-control-sm" name="access_code_names[]" 
+                                                       value="<?php echo htmlspecialchars($urlItem['name'] ?? ''); ?>" placeholder="按钮文字">
+                                            </div>
+                                            <div class="col-md-7">
+                                                <input type="url" class="form-control form-control-sm" name="access_code_urls[]" 
+                                                       value="<?php echo htmlspecialchars($urlItem['url'] ?? ''); ?>" placeholder="https://weibo.com/xxx">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="d-flex gap-1">
+                                                    <?php if (!empty($urlItem['url'])): ?>
+                                                        <a href="<?php echo htmlspecialchars($urlItem['url']); ?>" target="_blank" class="btn btn-outline-info btn-sm" title="测试链接">
+                                                            <i class="bi bi-box-arrow-up-right"></i>
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-url-btn" title="删除">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                        <button type="button" id="add-url-btn" class="btn btn-outline-success btn-sm mt-2">
+                            <i class="bi bi-plus-circle"></i> 添加获取地址
+                        </button>
+                        <div class="help-text">配置多个访问码获取渠道，用户可选择不同方式获取访问码，留空则不显示</div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="access_code_tutorial" class="form-label">访问码获取提示</label>
-                        <input type="text" class="form-control" id="access_code_tutorial" name="access_code_tutorial" 
-                               value="<?php echo htmlspecialchars($accessCodeTutorial); ?>"
-                               placeholder="关注主页即可获取每日访问码">
-                        <div class="help-text">显示在访问码输入弹窗中的提示文字</div>
+                        <label for="access_code_tutorial" class="form-label">访问码获取教程</label>
+                        <textarea class="form-control" id="access_code_tutorial" name="access_code_tutorial" 
+                                  rows="4" placeholder="输入获取访问码的教程说明，支持多行文本"><?php echo htmlspecialchars($accessCodeTutorial); ?></textarea>
+                        <div class="help-text">显示在访问码输入弹窗中的教程说明文字，支持换行</div>
                     </div>
                 </div>
 
@@ -423,6 +473,46 @@ $accessCodeTutorial = $configs['access_code_tutorial'] ?? '关注主页即可获
             var weiboUrl = document.getElementById('weibo_url').value;
             document.getElementById('weibo-preview').href = redirectUrl || weiboUrl;
         }
+        
+        // 动态添加/删除访问码获取地址
+        document.getElementById('add-url-btn').addEventListener('click', function() {
+            var container = document.getElementById('access-code-urls-container');
+            var newItem = document.createElement('div');
+            newItem.className = 'url-item mb-2';
+            newItem.innerHTML = `
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm" name="access_code_names[]" placeholder="按钮文字">
+                    </div>
+                    <div class="col-md-7">
+                        <input type="url" class="form-control form-control-sm" name="access_code_urls[]" placeholder="https://weibo.com/xxx">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-url-btn">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+        });
+        
+        // 删除按钮事件委托
+        document.getElementById('access-code-urls-container').addEventListener('click', function(e) {
+            if (e.target.closest('.remove-url-btn')) {
+                var urlItem = e.target.closest('.url-item');
+                if (urlItem) {
+                    var container = document.getElementById('access-code-urls-container');
+                    // 如果只剩一个，清空内容而不是删除
+                    if (container.querySelectorAll('.url-item').length <= 1) {
+                        urlItem.querySelector('input[name="access_code_names[]"]').value = '';
+                        urlItem.querySelector('input[name="access_code_urls[]"]').value = '';
+                    } else {
+                        urlItem.remove();
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
