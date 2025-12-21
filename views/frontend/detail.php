@@ -324,17 +324,9 @@ include APP_PATH . '/views/layouts/header.php';
     <div class="detail-card">
         <!-- 封面图片 -->
         <?php 
+        // 直接使用数据库中的封面路径（与后台保持一致）
         $coverPath = $manga['cover_image'] ?? '';
         $hasCover = !empty($coverPath);
-        // 处理封面路径，确保路径正确
-        if ($hasCover) {
-            // 移除开头的 /public 前缀（如果存在），因为 public 是 web 根目录
-            $coverPath = preg_replace('#^/?public/#', '/', $coverPath);
-            // 确保路径以 / 开头
-            if (strpos($coverPath, '/') !== 0 && strpos($coverPath, 'http') !== 0) {
-                $coverPath = '/' . $coverPath;
-            }
-        }
         ?>
         <div class="cover-section">
             <?php if ($hasCover): ?>
