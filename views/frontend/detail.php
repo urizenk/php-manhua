@@ -360,8 +360,13 @@ include APP_PATH . '/views/layouts/header.php';
         $coverPath = $manga['cover_image'] ?? '';
         $hasCover = !empty($coverPath);
         // 处理封面路径，确保路径正确
-        if ($hasCover && strpos($coverPath, '/') !== 0 && strpos($coverPath, 'http') !== 0) {
-            $coverPath = '/' . $coverPath;
+        if ($hasCover) {
+            // 移除开头的 /public 前缀（如果存在），因为 public 是 web 根目录
+            $coverPath = preg_replace('#^/?public/#', '/', $coverPath);
+            // 确保路径以 / 开头
+            if (strpos($coverPath, '/') !== 0 && strpos($coverPath, 'http') !== 0) {
+                $coverPath = '/' . $coverPath;
+            }
         }
         ?>
         <div class="cover-section">

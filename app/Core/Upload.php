@@ -296,11 +296,15 @@ class Upload
     }
 
     /**
-     * 获取相对路径（相对于APP_PATH）
+     * 获取相对路径（相对于web根目录，即public目录）
      */
     private function getRelativePath($fullPath)
     {
-        return str_replace(APP_PATH, '', $fullPath);
+        // 移除 APP_PATH 得到相对路径
+        $relativePath = str_replace(APP_PATH, '', $fullPath);
+        // 移除开头的 /public 前缀，因为 public 是 web 根目录
+        $relativePath = preg_replace('#^/?public/#', '/', $relativePath);
+        return $relativePath;
     }
 
     /**
