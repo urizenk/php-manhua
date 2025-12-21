@@ -176,7 +176,7 @@ $customCss = '
     .description-toggle:hover {
         text-decoration: underline;
     }
-    /* 资源链接卡片 */
+    /* 资源信息卡片 */
     .resource-card {
         background: #FFFBF5;
         border-radius: 12px;
@@ -184,57 +184,38 @@ $customCss = '
         overflow: hidden;
         margin: 12px 0;
     }
-    .resource-link-row {
+    /* 统一行样式 */
+    .resource-row {
         display: flex;
         align-items: center;
         padding: 14px 16px;
-        text-decoration: none;
-        color: #0066CC;
         font-size: 0.88rem;
-        transition: background 0.2s ease;
+        color: #0066CC;
+        text-decoration: none;
         border-bottom: 1px solid #FFE8D0;
+        transition: background 0.2s ease;
     }
-    .resource-link-row:last-child {
+    .resource-row:last-child {
         border-bottom: none;
     }
-    .resource-link-row:hover {
+    a.resource-row:hover {
         background: #FFF5EB;
     }
-    .resource-link-row i {
+    .resource-row i {
         flex-shrink: 0;
-        margin-right: 12px;
+        width: 20px;
+        margin-right: 10px;
         font-size: 1rem;
         color: #FF8C42;
+        text-align: center;
     }
-    .resource-link-row .link-text {
+    .resource-row .row-text {
         flex: 1;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-    /* 提取码行 - 与链接行样式统一 */
-    .extract-code-row {
-        display: flex;
-        align-items: center;
-        padding: 14px 16px;
-        font-size: 0.88rem;
-    }
-    .extract-code-row i {
-        flex-shrink: 0;
-        margin-right: 12px;
-        font-size: 1rem;
-        color: #FF8C42;
-    }
-    .extract-code-row .extract-label {
-        color: #666;
-    }
-    .extract-code-row .extract-value {
-        font-family: "SF Mono", "Monaco", "Consolas", monospace;
-        font-weight: 700;
-        color: #D84315;
-        margin-left: 6px;
-        letter-spacing: 0.5px;
+        color: #0066CC;
     }
     /* 章节列表 */
     .chapter-list {
@@ -411,34 +392,25 @@ include APP_PATH . '/views/layouts/header.php';
                             if (empty($link)) continue;
                             // 检查是否是有效的URL
                             $isUrl = preg_match('/^https?:\/\//i', $link);
-                            // 显示简短版本
-                            $displayLink = $link;
-                            if (mb_strlen($link) > 40) {
-                                $displayLink = mb_substr($link, 0, 37) . '...';
-                            }
                         ?>
                             <?php if ($isUrl): ?>
-                                <a href="<?php echo htmlspecialchars($link); ?>" 
-                                   target="_blank" 
-                                   class="resource-link-row"
-                                   title="<?php echo htmlspecialchars($link); ?>">
-                                    <i class="bi bi-box-arrow-up-right"></i>
-                                    <span class="link-text"><?php echo htmlspecialchars($displayLink); ?></span>
+                                <a href="<?php echo htmlspecialchars($link); ?>" target="_blank" class="resource-row" title="<?php echo htmlspecialchars($link); ?>">
+                                    <i class="bi bi-link-45deg"></i>
+                                    <span class="row-text"><?php echo htmlspecialchars($link); ?></span>
                                 </a>
                             <?php else: ?>
-                                <div class="resource-link-row" style="color: #666; cursor: default;">
+                                <div class="resource-row" style="cursor: default;">
                                     <i class="bi bi-info-circle"></i>
-                                    <span class="link-text"><?php echo htmlspecialchars($link); ?></span>
+                                    <span class="row-text"><?php echo htmlspecialchars($link); ?></span>
                                 </div>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                     
                     <?php if (!empty($manga['extract_code'])): ?>
-                        <div class="extract-code-row">
+                        <div class="resource-row" style="cursor: default;">
                             <i class="bi bi-key-fill"></i>
-                            <span class="extract-label">提取码：</span>
-                            <span class="extract-value"><?php echo htmlspecialchars($manga['extract_code']); ?></span>
+                            <span class="row-text">提取码：<?php echo htmlspecialchars($manga['extract_code']); ?></span>
                         </div>
                     <?php endif; ?>
                 </div>
