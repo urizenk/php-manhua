@@ -137,12 +137,16 @@ $customCss = '
     .manga-tag {
         display: inline-block;
         padding: 5px 14px;
-        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-        color: #1565C0;
         border-radius: 15px;
         font-size: 0.85rem;
         font-weight: 500;
     }
+    /* 莫兰迪配色标签 */
+    .manga-tag:nth-child(5n+1) { background: #E8D4D4; color: #8B5A5A; } /* 莫兰迪红 */
+    .manga-tag:nth-child(5n+2) { background: #F5E6D3; color: #8B7355; } /* 莫兰迪黄 */
+    .manga-tag:nth-child(5n+3) { background: #D4E5E8; color: #5A7A8B; } /* 莫兰迪蓝 */
+    .manga-tag:nth-child(5n+4) { background: #D8E8D4; color: #5A8B5A; } /* 莫兰迪绿 */
+    .manga-tag:nth-child(5n+5) { background: #E4D4E8; color: #7A5A8B; } /* 莫兰迪紫 */
     .section-title {
         font-size: 1rem;
         font-weight: bold;

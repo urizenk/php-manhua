@@ -63,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sortOrder  = (int)($_POST['sort_order'] ?? 0);
                 $needCover  = isset($_POST['need_cover']) ? 1 : 0;
                 $needStatus = isset($_POST['need_status']) ? 1 : 0;
+                $externalUrl = trim($_POST['external_url'] ?? '');
 
                 if ($typeName === '' || $typeCode === '') {
                     $message     = '类型名称和类型代码不能为空';
@@ -78,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'sort_order'  => $sortOrder,
                         'need_cover'  => $needCover,
                         'need_status' => $needStatus,
+                        'external_url' => $externalUrl ?: null,
                     ]);
                     $message     = '模块添加成功';
                     $messageType = 'success';
@@ -95,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $sortOrder  = (int)($_POST['sort_order'] ?? 0);
                 $needCover  = isset($_POST['need_cover']) ? 1 : 0;
                 $needStatus = isset($_POST['need_status']) ? 1 : 0;
+                $externalUrl = trim($_POST['external_url'] ?? '');
 
                 if ($id <= 0 || $typeName === '' || $typeCode === '') {
                     $message     = '参数不完整';
@@ -111,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'sort_order'  => $sortOrder,
                         'need_cover'  => $needCover,
                         'need_status' => $needStatus,
+                        'external_url' => $externalUrl ?: null,
                     ],
                     'id = ?',
                     [$id]
@@ -335,6 +339,14 @@ include APP_PATH . '/views/admin/layout_header.php';
                     </button>
                 </div>
             </div>
+            
+            <!-- 外部链接（用于失效反馈、防走丢等模块） -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">外部跳转链接 <span class="text-muted small">(可选，用于失效反馈、防走丢等需要跳转到外部页面的模块)</span></label>
+                    <input type="url" name="external_url" class="form-control" placeholder="https://example.com/feedback">
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -407,6 +419,7 @@ include APP_PATH . '/views/admin/layout_header.php';
                             <th class="table-icon-cell">图标</th>
                             <th>模块名称</th>
                             <th>类型代码</th>
+                            <th>外部链接</th>
                             <th width="80">排序</th>
                             <th width="60">状态</th>
                             <th width="160">操作</th>
@@ -447,6 +460,16 @@ include APP_PATH . '/views/admin/layout_header.php';
                                 <td>
                                         <input type="text" name="type_code" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['type_code']); ?>">
+                                </td>
+                                <td>
+                                        <input type="url" name="external_url" class="form-control form-control-sm"
+                                               value="<?php echo htmlspecialchars($type['external_url'] ?? ''); ?>"
+                                               placeholder="留空则显示漫画列表">
+                                        <?php if (!empty($type['external_url'])): ?>
+                                            <a href="<?php echo htmlspecialchars($type['external_url']); ?>" target="_blank" class="btn btn-link btn-sm p-0 mt-1">
+                                                <i class="bi bi-box-arrow-up-right"></i> 测试
+                                            </a>
+                                        <?php endif; ?>
                                 </td>
                                 <td>
                                         <input type="number" name="sort_order" class="form-control form-control-sm"
@@ -514,6 +537,18 @@ include APP_PATH . '/views/admin/layout_header.php';
                                     <label class="mobile-label">排序</label>
                                     <input type="number" name="sort_order" class="form-control form-control-sm"
                                            value="<?php echo (int)$type['sort_order']; ?>">
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label class="mobile-label">外部链接</label>
+                                    <input type="url" name="external_url" class="form-control form-control-sm"
+                                           value="<?php echo htmlspecialchars($type['external_url'] ?? ''); ?>"
+                                           placeholder="留空则显示漫画列表">
+                                    <?php if (!empty($type['external_url'])): ?>
+                                        <a href="<?php echo htmlspecialchars($type['external_url']); ?>" target="_blank" class="btn btn-link btn-sm p-0">
+                                            <i class="bi bi-box-arrow-up-right"></i> 测试链接
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
                                 
                                 <div class="mb-2">

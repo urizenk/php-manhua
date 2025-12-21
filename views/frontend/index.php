@@ -23,6 +23,8 @@ $siteDesc = $configSettings['site_desc'] ?? '无偿分享 · 禁止盗卖 · 更
 $weiboUrl = $configSettings['weibo_url'] ?? '#';
 $weiboText = $configSettings['weibo_text'] ?? '微博@资源小站';
 $homepageRedirectUrl = $configSettings['homepage_redirect_url'] ?? '';
+$accessCodeUrl = $configSettings['access_code_url'] ?? '';
+$accessCodeTutorial = $configSettings['access_code_tutorial'] ?? '关注主页即可获取每日访问码';
 
 // 使用首页跳转URL，如果没有设置则使用微博URL
 $jumpUrl = $homepageRedirectUrl ?: $weiboUrl;
@@ -35,6 +37,9 @@ $isAccessVerified = $session ? $session->isAccessVerified() : false;
 
 $customCss = '
 <style>
+    * {
+        box-sizing: border-box;
+    }
     body {
         font-family: "Poppins", "Microsoft YaHei", Arial, sans-serif;
         background-color: #FFF8DC;
@@ -44,32 +49,34 @@ $customCss = '
         justify-content: center;
         align-items: center;
         min-height: 100vh;
+        min-height: 100dvh; /* 动态视口高度，适配移动端 */
     }
     .container {
         text-align: center;
-        width: 90%;
+        width: 92%;
         max-width: 500px;
         background-color: white;
-        padding: 25px 20px;
+        padding: clamp(20px, 5vw, 30px) clamp(15px, 4vw, 25px);
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        margin: 20px 0;
+        margin: 15px auto;
     }
     .page-title {
-        font-size: 1.8rem;
+        font-size: clamp(1.5rem, 5vw, 1.8rem);
         color: #333;
         margin-bottom: 15px;
         font-weight: bold;
+        word-break: keep-all;
     }
     .title-notice {
         background-color: #FFF8DC;
         padding: 12px 15px;
         border-radius: 10px;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
     .title-notice p {
         margin: 5px 0;
-        font-size: 0.95rem;
+        font-size: clamp(0.85rem, 3vw, 0.95rem);
         font-weight: 500;
         color: #444;
     }
@@ -77,6 +84,7 @@ $customCss = '
         color: #FF6B35;
         font-weight: bold;
         text-decoration: none;
+        word-break: break-all;
     }
     .title-notice a:hover {
         text-decoration: underline;
@@ -84,14 +92,14 @@ $customCss = '
     .category-nav {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin: 20px 0;
+        gap: clamp(8px, 2vw, 12px);
+        margin: 15px 0;
     }
     .category-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 18px 12px;
+        padding: clamp(12px, 3vw, 18px) clamp(8px, 2vw, 12px);
         background: white;
         border-radius: 12px;
         text-decoration: none;
@@ -100,34 +108,38 @@ $customCss = '
         transition: all 0.3s ease;
         border: 2px solid #f0f0f0;
         cursor: pointer;
+        min-height: 90px;
     }
-    .category-item:hover {
+    .category-item:hover, .category-item:active {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(255,107,53,0.2);
         border-color: #FFA500;
     }
     .category-icon {
-        width: 45px;
-        height: 45px;
+        width: clamp(38px, 10vw, 45px);
+        height: clamp(38px, 10vw, 45px);
         display: flex;
         align-items: center;
         justify-content: center;
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         border-radius: 12px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        flex-shrink: 0;
     }
     .category-icon i {
-        font-size: 1.3rem;
+        font-size: clamp(1.1rem, 4vw, 1.3rem);
         color: white;
     }
     .category-item span {
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: clamp(0.8rem, 3vw, 0.95rem);
         color: #333;
+        line-height: 1.3;
+        word-break: keep-all;
     }
     .footer-notice {
-        margin-top: 30px;
-        font-size: 0.7rem;
+        margin-top: 25px;
+        font-size: clamp(0.6rem, 2vw, 0.7rem);
         color: #999;
         line-height: 1.6;
     }
@@ -147,6 +159,7 @@ $customCss = '
         z-index: 9999;
         justify-content: center;
         align-items: center;
+        padding: 15px;
     }
     .access-modal.show {
         display: flex;
@@ -154,10 +167,12 @@ $customCss = '
     .access-modal-content {
         background: white;
         border-radius: 15px;
-        width: 90%;
+        width: 100%;
         max-width: 350px;
         overflow: hidden;
         box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        max-height: 90vh;
+        overflow-y: auto;
     }
     .access-modal-header {
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
@@ -167,6 +182,8 @@ $customCss = '
         justify-content: space-between;
         align-items: center;
         font-weight: bold;
+        position: sticky;
+        top: 0;
     }
     .modal-close {
         background: none;
@@ -175,19 +192,21 @@ $customCss = '
         font-size: 1.5rem;
         cursor: pointer;
         line-height: 1;
+        padding: 5px;
     }
     .access-modal-body {
         padding: 25px 20px;
     }
     .access-code-input {
         width: 100%;
-        padding: 12px 15px;
+        padding: 14px 15px;
         border: 2px solid #e0e0e0;
         border-radius: 10px;
-        font-size: 1rem;
+        font-size: 1.1rem;
         text-align: center;
         margin-bottom: 15px;
         box-sizing: border-box;
+        -webkit-appearance: none;
     }
     .access-code-input:focus {
         outline: none;
@@ -195,7 +214,7 @@ $customCss = '
     }
     .btn-access-submit {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         color: white;
         border: none;
@@ -204,16 +223,73 @@ $customCss = '
         font-weight: bold;
         cursor: pointer;
         transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
     }
-    .btn-access-submit:hover {
+    .btn-access-submit:hover, .btn-access-submit:active {
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(255,107,53,0.3);
     }
     .access-tips {
         text-align: center;
         margin-top: 15px;
-        color: #999;
-        font-size: 0.85rem;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    .access-tips p {
+        margin: 8px 0;
+    }
+    .btn-get-code {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 10px 20px;
+        background: #FFF3E0;
+        color: #E65100;
+        border: 2px solid #FFB74D;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    .btn-get-code:hover, .btn-get-code:active {
+        background: #FFB74D;
+        color: white;
+    }
+    
+    /* 响应式调整 */
+    @media screen and (max-width: 360px) {
+        .container {
+            width: 95%;
+            padding: 15px 12px;
+        }
+        .category-nav {
+            gap: 8px;
+        }
+        .category-item {
+            padding: 10px 8px;
+            min-height: 80px;
+        }
+    }
+    
+    /* 针对特殊屏幕高度（如iPhone SE） */
+    @media screen and (max-height: 600px) {
+        body {
+            align-items: flex-start;
+            padding-top: 10px;
+        }
+        .container {
+            margin: 10px auto;
+        }
+    }
+    
+    /* 安全区域适配（iPhone X等刘海屏） */
+    @supports (padding: max(0px)) {
+        .container {
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+        .access-modal {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
     }
 </style>
 ';
@@ -222,6 +298,7 @@ $customJs = '
 <script>
 (function() {
     var targetUrl = "";
+    var isExternal = false;
     var isVerified = ' . ($isAccessVerified ? 'true' : 'false') . ';
     var accessModal = document.getElementById("accessModal");
     var accessInput = document.getElementById("accessCode");
@@ -235,13 +312,15 @@ $customJs = '
     function openModal() {
         accessModal.classList.add("show");
         accessInput.value = "";
+        document.body.style.overflow = "hidden";
         setTimeout(function() {
             accessInput.focus();
-        }, 50);
+        }, 100);
     }
 
     function closeModal() {
         accessModal.classList.remove("show");
+        document.body.style.overflow = "";
     }
 
     function postVerify(code) {
@@ -274,9 +353,18 @@ $customJs = '
     }
 
     document.querySelectorAll(".category-item").forEach(function(card) {
-        card.addEventListener("click", function() {
+        card.addEventListener("click", function(e) {
+            e.preventDefault();
             targetUrl = card.getAttribute("data-url") || "";
+            isExternal = card.getAttribute("data-external") === "1";
+            
             if (!targetUrl) {
+                return;
+            }
+
+            // 外部链接直接跳转，不需要验证访问码
+            if (isExternal) {
+                window.open(targetUrl, "_blank");
                 return;
             }
 
@@ -336,6 +424,11 @@ $customJs = '
             closeModal();
         }
     });
+    
+    // 防止iOS下的弹出键盘导致页面滚动问题
+    accessInput.addEventListener("blur", function() {
+        window.scrollTo(0, 0);
+    });
 })();
 </script>
 ';
@@ -361,9 +454,12 @@ include APP_PATH . '/views/layouts/header.php';
                 <?php
                     $code = $type['type_code'];
                     $icon = $type['icon'] ?? 'book';
-                    $url  = module_url($code);
+                    $externalUrl = $type['external_url'] ?? '';
+                    // 如果有外部链接，使用外部链接；否则使用内部模块链接
+                    $url = $externalUrl ?: module_url($code);
+                    $isExternal = !empty($externalUrl) ? '1' : '0';
                 ?>
-                <div class="category-item" data-url="<?php echo htmlspecialchars($url); ?>">
+                <div class="category-item" data-url="<?php echo htmlspecialchars($url); ?>" data-external="<?php echo $isExternal; ?>">
                     <div class="category-icon">
                         <i class="bi bi-<?php echo htmlspecialchars($icon); ?>"></i>
                     </div>
@@ -392,10 +488,17 @@ include APP_PATH . '/views/layouts/header.php';
             <input type="text"
                    class="access-code-input"
                    id="accessCode"
-                   placeholder="输入访问码">
+                   placeholder="输入访问码"
+                   autocomplete="off"
+                   inputmode="text">
             <button type="button" class="btn-access-submit" id="verifyBtn">提交</button>
             <div class="access-tips">
-                <p>关注主页即可获取每日访问码</p>
+                <p><?php echo htmlspecialchars($accessCodeTutorial); ?></p>
+                <?php if ($accessCodeUrl): ?>
+                    <a href="<?php echo htmlspecialchars($accessCodeUrl); ?>" target="_blank" class="btn-get-code">
+                        <i class="bi bi-box-arrow-up-right"></i> 点击获取访问码
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

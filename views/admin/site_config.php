@@ -83,6 +83,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
                 );
             }
             
+            // 更新访问码获取URL
+            if (isset($_POST['access_code_url'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('access_code_url', ?, '访问码获取地址') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['access_code_url'], $_POST['access_code_url']]
+                );
+            }
+            
+            // 更新访问码获取提示
+            if (isset($_POST['access_code_tutorial'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('access_code_tutorial', ?, '访问码获取提示') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['access_code_tutorial'], $_POST['access_code_tutorial']]
+                );
+            }
+            
             $db->commit();
             $message = '配置保存成功！';
             $messageType = 'success';
@@ -109,6 +129,8 @@ $siteDesc = $configs['site_desc'] ?? '无偿分享 禁止盗卖 更多精彩';
 $weiboUrl = $configs['weibo_url'] ?? 'https://weibo.com/';
 $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
 $homepageRedirectUrl = $configs['homepage_redirect_url'] ?? '';
+$accessCodeUrl = $configs['access_code_url'] ?? '';
+$accessCodeTutorial = $configs['access_code_tutorial'] ?? '关注主页即可获取每日访问码';
 
 ?>
 
@@ -296,6 +318,27 @@ $homepageRedirectUrl = $configs['homepage_redirect_url'] ?? '';
                         <input type="text" class="form-control" id="access_code" name="access_code" 
                                value="<?php echo htmlspecialchars($accessCode); ?>" required>
                         <div class="help-text">用户需要输入此访问码才能访问网站内容</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="access_code_url" class="form-label">访问码获取地址</label>
+                        <input type="url" class="form-control" id="access_code_url" name="access_code_url" 
+                               value="<?php echo htmlspecialchars($accessCodeUrl); ?>"
+                               placeholder="https://weibo.com/xxx">
+                        <div class="help-text">用户点击"获取访问码"后跳转的地址（如微博主页），留空则不显示获取链接</div>
+                        <?php if ($accessCodeUrl): ?>
+                            <a href="<?php echo htmlspecialchars($accessCodeUrl); ?>" target="_blank" class="btn btn-sm btn-outline-info mt-2">
+                                <i class="bi bi-box-arrow-up-right"></i> 测试链接
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="access_code_tutorial" class="form-label">访问码获取提示</label>
+                        <input type="text" class="form-control" id="access_code_tutorial" name="access_code_tutorial" 
+                               value="<?php echo htmlspecialchars($accessCodeTutorial); ?>"
+                               placeholder="关注主页即可获取每日访问码">
+                        <div class="help-text">显示在访问码输入弹窗中的提示文字</div>
                     </div>
                 </div>
 

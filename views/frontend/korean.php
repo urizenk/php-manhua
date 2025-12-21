@@ -165,14 +165,18 @@ $customCss = '
     }
     .tag-badge {
         display: inline-block;
-        background-color: #FFA500;
-        color: white;
         font-size: 1rem;
         font-weight: bold;
         padding: 8px 15px;
         margin: 15px 0 10px 0;
         border-radius: 5px;
     }
+    /* 莫兰迪配色标签 */
+    .tag-badge.morandi-red { background: #C4A4A4; color: #5A3A3A; }
+    .tag-badge.morandi-yellow { background: #D4C4A4; color: #6B5A3A; }
+    .tag-badge.morandi-blue { background: #A4B4C4; color: #3A4A5A; }
+    .tag-badge.morandi-green { background: #A4C4A4; color: #3A5A3A; }
+    .tag-badge.morandi-purple { background: #B4A4C4; color: #4A3A5A; }
     .manga-list {
         list-style: none;
         padding: 0;
@@ -268,8 +272,14 @@ include APP_PATH . '/views/layouts/header.php';
     <?php else: ?>
         
         <!-- 按标签分组显示 -->
-        <?php foreach ($groupedMangas as $tagId => $group): ?>
-            <div class="tag-badge"><?php echo htmlspecialchars($group['tag_name']); ?></div>
+        <?php 
+        $morandiColors = ['morandi-red', 'morandi-yellow', 'morandi-blue', 'morandi-green', 'morandi-purple'];
+        $colorIndex = 0;
+        foreach ($groupedMangas as $tagId => $group): 
+            $colorClass = $morandiColors[$colorIndex % 5];
+            $colorIndex++;
+        ?>
+            <div class="tag-badge <?php echo $colorClass; ?>"><?php echo htmlspecialchars($group['tag_name']); ?></div>
             <ul class="manga-list">
                 <?php foreach ($group['mangas'] as $manga): ?>
                     <li class="manga-item">
