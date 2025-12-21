@@ -53,48 +53,52 @@ $shortDescription = $isLongDescription ? mb_substr($description, 0, 200) . '...'
 $customCss = '
 <style>
     body {
-        background: #FFF8DC;
+        background: linear-gradient(180deg, #FFF8DC 0%, #FFFEF5 100%) !important;
         min-height: 100vh;
     }
     .content-wrapper {
-        max-width: 800px;
+        max-width: 600px;
         margin: 0 auto;
-        padding: 20px 15px;
+        padding: 15px;
     }
     .detail-card {
         background: white;
-        border-radius: 15px;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 30px rgba(255,107,53,0.12);
     }
+    /* 封面区域 */
     .cover-section {
         position: relative;
+        background: linear-gradient(135deg, #FFE4CC 0%, #FFD4B8 100%);
     }
     .cover-image {
         width: 100%;
-        max-height: 350px;
+        height: 280px;
         object-fit: cover;
         display: block;
     }
     .no-cover {
-        height: 200px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 180px;
+        background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 4rem;
+        font-size: 3.5rem;
     }
+    /* 主体内容 */
     .detail-body {
-        padding: 25px 20px;
+        padding: 20px 18px 25px;
     }
     .manga-title {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 15px;
-        line-height: 1.4;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #2D2D2D;
+        margin-bottom: 12px;
+        line-height: 1.5;
     }
+    /* 元信息标签 */
     .manga-meta {
         display: flex;
         flex-wrap: wrap;
@@ -105,168 +109,221 @@ $customCss = '
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        padding: 5px 12px;
-        background: #f5f5f5;
-        border-radius: 15px;
-        font-size: 0.85rem;
-        color: #666;
+        padding: 6px 14px;
+        background: #FFF5EB;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        color: #FF8C42;
+        border: 1px solid #FFE4CC;
     }
     .meta-item i {
-        color: #999;
-    }
-    .status-badge {
-        padding: 5px 12px;
-        border-radius: 15px;
         font-size: 0.85rem;
-        font-weight: 500;
     }
-    .status-serializing {
-        background: #e3f2fd;
-        color: #1565c0;
-    }
-    .status-completed {
-        background: #e8f5e9;
-        color: #2e7d32;
-    }
+    /* 漫画标签 - 莫兰迪配色 */
     .manga-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
     }
     .manga-tag {
         display: inline-block;
-        padding: 5px 14px;
-        border-radius: 15px;
-        font-size: 0.85rem;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
         font-weight: 500;
+        transition: transform 0.2s ease;
     }
-    /* 莫兰迪配色标签 */
-    .manga-tag:nth-child(5n+1) { background: #E8D4D4; color: #8B5A5A; } /* 莫兰迪红 */
-    .manga-tag:nth-child(5n+2) { background: #F5E6D3; color: #8B7355; } /* 莫兰迪黄 */
-    .manga-tag:nth-child(5n+3) { background: #D4E5E8; color: #5A7A8B; } /* 莫兰迪蓝 */
-    .manga-tag:nth-child(5n+4) { background: #D8E8D4; color: #5A8B5A; } /* 莫兰迪绿 */
-    .manga-tag:nth-child(5n+5) { background: #E4D4E8; color: #7A5A8B; } /* 莫兰迪紫 */
+    .manga-tag:hover {
+        transform: scale(1.05);
+    }
+    .manga-tag:nth-child(6n+1) { background: #F2E1E1; color: #9B6B6B; }
+    .manga-tag:nth-child(6n+2) { background: #FDF3E7; color: #A68B5B; }
+    .manga-tag:nth-child(6n+3) { background: #E1ECF2; color: #5B7B9B; }
+    .manga-tag:nth-child(6n+4) { background: #E5F2E1; color: #5B9B6B; }
+    .manga-tag:nth-child(6n+5) { background: #EDE1F2; color: #7B5B9B; }
+    .manga-tag:nth-child(6n+6) { background: #F2EDE1; color: #8B7B5B; }
+    /* 分区标题 */
     .section-title {
-        font-size: 1rem;
-        font-weight: bold;
-        color: #333;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #444;
         margin: 20px 0 10px;
         display: flex;
         align-items: center;
         gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #FFF0E0;
     }
     .section-title i {
-        color: #FF6B35;
+        color: #FF7744;
+        font-size: 1rem;
     }
+    /* 简介 */
     .description-text {
-        color: #555;
+        color: #666;
         line-height: 1.8;
-        font-size: 0.95rem;
-        margin-bottom: 15px;
+        font-size: 0.9rem;
+        background: #FAFAFA;
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 10px;
     }
     .description-full {
         display: none;
     }
     .description-toggle {
-        color: #1976D2;
+        color: #FF7744;
         cursor: pointer;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-left: 5px;
     }
     .description-toggle:hover {
         text-decoration: underline;
     }
+    /* 资源链接 */
     .resource-section {
-        background: #FFF8E1;
-        border-radius: 12px;
+        background: linear-gradient(135deg, #FFF8E8 0%, #FFF3DC 100%);
+        border-radius: 15px;
         padding: 15px;
-        margin: 20px 0;
+        margin: 15px 0;
+        border: 1px solid #FFE8C8;
     }
     .resource-link {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         padding: 12px 15px;
         background: white;
-        border-radius: 10px;
+        border-radius: 12px;
         margin-bottom: 10px;
         text-decoration: none;
-        color: #1976D2;
-        font-size: 0.95rem;
+        color: #0066CC;
+        font-size: 0.85rem;
         word-break: break-all;
         transition: all 0.2s ease;
-        border: 1px solid #e0e0e0;
+        border: 1px solid #E8E8E8;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .resource-link:last-child {
+        margin-bottom: 0;
     }
     .resource-link:hover {
-        background: #E3F2FD;
-        border-color: #1976D2;
+        background: #F0F7FF;
+        border-color: #0066CC;
+        transform: translateX(3px);
     }
-    .extract-code {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 15px;
-        background: #FFF3E0;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        color: #E65100;
-        margin-top: 10px;
+    .resource-link i {
+        flex-shrink: 0;
+        color: #0066CC;
     }
-    .extract-code-value {
-        font-weight: bold;
-        font-family: monospace;
-        font-size: 1rem;
+    /* 提取码 */
+    .extract-code-box {
+        margin-top: 12px;
+        padding: 12px 15px;
         background: white;
-        padding: 2px 10px;
-        border-radius: 5px;
+        border-radius: 12px;
+        border: 2px dashed #FFB366;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
     }
+    .extract-label {
+        color: #E65100;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .extract-value {
+        font-family: "SF Mono", "Monaco", "Consolas", monospace;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #D84315;
+        background: #FFF3E0;
+        padding: 4px 12px;
+        border-radius: 8px;
+        letter-spacing: 1px;
+    }
+    /* 章节列表 */
     .chapter-list {
         list-style: none;
         padding: 0;
         margin: 0;
     }
     .chapter-item {
-        padding: 12px 15px;
-        border-bottom: 1px solid #f0f0f0;
-        transition: all 0.2s ease;
+        padding: 12px 0;
+        border-bottom: 1px solid #F5F5F5;
     }
     .chapter-item:last-child {
         border-bottom: none;
     }
-    .chapter-item:hover {
-        background: #f8f9ff;
-    }
     .chapter-link {
         text-decoration: none;
-        color: #333;
+        color: #444;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        padding: 8px 12px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
     }
     .chapter-link:hover {
-        color: #1976D2;
+        background: #FFF5EB;
+        color: #FF7744;
     }
     .chapter-link i {
-        color: #999;
+        color: #CCC;
+        transition: color 0.2s ease;
     }
+    .chapter-link:hover i {
+        color: #FF7744;
+    }
+    /* 返回按钮 */
     .bottom-back {
         text-align: center;
-        margin-top: 30px;
-        padding-bottom: 20px;
+        margin-top: 25px;
+        padding-bottom: 30px;
     }
     .bottom-back-btn {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         background: white;
-        color: #FF6B35;
-        border: 2px solid #FF6B35;
-        padding: 10px 30px;
-        border-radius: 25px;
+        color: #FF7744;
+        border: 2px solid #FF7744;
+        padding: 12px 35px;
+        border-radius: 30px;
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 0.95rem;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255,119,68,0.15);
     }
     .bottom-back-btn:hover {
-        background: #FF6B35;
+        background: linear-gradient(135deg, #FF9966 0%, #FF7744 100%);
         color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255,119,68,0.3);
+    }
+    /* 移动端适配 */
+    @media (max-width: 480px) {
+        .content-wrapper {
+            padding: 10px;
+        }
+        .cover-image {
+            height: 220px;
+        }
+        .detail-body {
+            padding: 15px 15px 20px;
+        }
+        .manga-title {
+            font-size: 1.2rem;
+        }
     }
 </style>
 ';
@@ -278,11 +335,20 @@ include APP_PATH . '/views/layouts/header.php';
     <!-- 详情卡片 -->
     <div class="detail-card">
         <!-- 封面图片 -->
+        <?php 
+        $coverPath = $manga['cover_image'] ?? '';
+        $hasCover = !empty($coverPath);
+        // 处理封面路径，确保路径正确
+        if ($hasCover && strpos($coverPath, '/') !== 0 && strpos($coverPath, 'http') !== 0) {
+            $coverPath = '/' . $coverPath;
+        }
+        ?>
         <div class="cover-section">
-            <?php if ($manga['cover_image']): ?>
-                <img src="<?php echo htmlspecialchars($manga['cover_image']); ?>" 
+            <?php if ($hasCover): ?>
+                <img src="<?php echo htmlspecialchars($coverPath); ?>" 
                      alt="<?php echo htmlspecialchars($manga['title']); ?>"
                      class="cover-image"
+                     onerror="this.parentElement.innerHTML='<div class=\'no-cover\'><i class=\'bi bi-image\'></i></div>'"
                      style="object-position: <?php echo htmlspecialchars($manga['cover_position'] ?? 'center'); ?>;">
             <?php else: ?>
                 <div class="no-cover">
@@ -297,13 +363,23 @@ include APP_PATH . '/views/layouts/header.php';
 
             <!-- 元信息 -->
             <div class="manga-meta">
-                <span class="meta-item">
-                    <i class="bi bi-folder"></i>
-                    <?php echo htmlspecialchars($manga['type_name']); ?>
-                </span>
+                <?php if (!empty($manga['type_name'])): ?>
+                    <span class="meta-item">
+                        <i class="bi bi-folder2"></i>
+                        <?php echo htmlspecialchars($manga['type_name']); ?>
+                    </span>
+                <?php endif; ?>
                 
-                <?php if ($manga['status']): ?>
-                    <span class="status-badge status-<?php echo $manga['status']; ?>">
+                <?php if (!empty($manga['tag_name'])): ?>
+                    <span class="meta-item">
+                        <i class="bi bi-tag"></i>
+                        <?php echo htmlspecialchars($manga['tag_name']); ?>
+                    </span>
+                <?php endif; ?>
+                
+                <?php if (!empty($manga['status'])): ?>
+                    <span class="meta-item" style="<?php echo $manga['status'] === 'completed' ? 'background:#E8F5E9;color:#2E7D32;border-color:#C8E6C9;' : 'background:#E3F2FD;color:#1565C0;border-color:#BBDEFB;'; ?>">
+                        <i class="bi bi-<?php echo $manga['status'] === 'completed' ? 'check-circle' : 'play-circle'; ?>"></i>
                         <?php echo $manga['status'] === 'serializing' ? '连载中' : '已完结'; ?>
                     </span>
                 <?php endif; ?>
@@ -326,22 +402,22 @@ include APP_PATH . '/views/layouts/header.php';
                 <div class="description-text" id="descriptionShort">
                     <?php echo nl2br(htmlspecialchars($shortDescription)); ?>
                     <?php if ($isLongDescription): ?>
-                        <span class="description-toggle" onclick="toggleDescription()">展开全部</span>
+                        <span class="description-toggle" onclick="toggleDescription()">展开全部 ▼</span>
                     <?php endif; ?>
                 </div>
                 <?php if ($isLongDescription): ?>
                     <div class="description-text description-full" id="descriptionFull">
                         <?php echo nl2br(htmlspecialchars($description)); ?>
-                        <span class="description-toggle" onclick="toggleDescription()">收起</span>
+                        <span class="description-toggle" onclick="toggleDescription()">收起 ▲</span>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
 
             <!-- 资源链接 -->
-            <?php if ($manga['resource_link'] || $manga['extract_code']): ?>
+            <?php if (!empty($manga['resource_link']) || !empty($manga['extract_code'])): ?>
                 <div class="section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
                 <div class="resource-section">
-                    <?php if ($manga['resource_link']): ?>
+                    <?php if (!empty($manga['resource_link'])): ?>
                         <?php 
                         // 分割多行链接
                         $links = preg_split('/[\r\n]+/', trim($manga['resource_link']));
@@ -356,22 +432,23 @@ include APP_PATH . '/views/layouts/header.php';
                                    target="_blank" 
                                    class="resource-link">
                                     <i class="bi bi-box-arrow-up-right"></i>
-                                    <?php echo htmlspecialchars($link); ?>
+                                    <span><?php echo htmlspecialchars($link); ?></span>
                                 </a>
                             <?php else: ?>
-                                <div class="resource-link" style="color: #666; cursor: default;">
+                                <div class="resource-link" style="color: #666; cursor: default; border-style: dashed;">
                                     <i class="bi bi-info-circle"></i>
-                                    <?php echo htmlspecialchars($link); ?>
+                                    <span><?php echo htmlspecialchars($link); ?></span>
                                 </div>
                             <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                     
-                    <?php if ($manga['extract_code']): ?>
-                        <div class="extract-code">
-                            <i class="bi bi-key"></i>
-                            提取码：
-                            <span class="extract-code-value"><?php echo htmlspecialchars($manga['extract_code']); ?></span>
+                    <?php if (!empty($manga['extract_code'])): ?>
+                        <div class="extract-code-box">
+                            <span class="extract-label">
+                                <i class="bi bi-key-fill"></i> 提取码：
+                            </span>
+                            <span class="extract-value"><?php echo htmlspecialchars($manga['extract_code']); ?></span>
                         </div>
                     <?php endif; ?>
                 </div>
