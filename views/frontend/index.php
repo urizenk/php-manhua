@@ -44,19 +44,19 @@ $customCss = '
         font-family: "Poppins", "Microsoft YaHei", Arial, sans-serif !important;
         background-color: #FFF8DC !important;
         margin: 0 !important;
-        padding: 10px !important;
+        padding: 0 !important;
         min-height: 100vh;
         min-height: 100dvh;
     }
     .home-container {
         text-align: center;
         width: 100%;
-        max-width: 500px;
+        max-width: 100%;
         background-color: white;
-        padding: 20px 15px;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        margin: 0 auto;
+        padding: 25px 20px 30px;
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     .page-title {
         font-size: clamp(1.5rem, 5vw, 1.8rem);
@@ -274,11 +274,8 @@ $customCss = '
     
     /* 响应式调整 */
     @media screen and (max-width: 360px) {
-        body {
-            padding: 8px !important;
-        }
         .home-container {
-            padding: 15px 12px;
+            padding: 20px 15px 25px;
         }
         .category-nav {
             gap: 8px;
@@ -289,22 +286,12 @@ $customCss = '
         }
     }
     
-    /* 针对特殊屏幕高度（如iPhone SE） */
-    @media screen and (max-height: 600px) {
-        body {
-            padding-top: 5px !important;
-        }
-        .home-container {
-            margin: 5px auto;
-        }
-    }
-    
     /* 安全区域适配（iPhone X等刘海屏） */
     @supports (padding: max(0px)) {
-        body {
-            padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
-            padding-left: max(10px, env(safe-area-inset-left)) !important;
-            padding-right: max(10px, env(safe-area-inset-right)) !important;
+        .home-container {
+            padding-bottom: max(30px, env(safe-area-inset-bottom));
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
         }
         .access-modal {
             padding-bottom: env(safe-area-inset-bottom);
