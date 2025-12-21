@@ -55,22 +55,31 @@ $customCss = '
     body {
         background: linear-gradient(180deg, #FFF8DC 0%, #FFFEF5 100%) !important;
         min-height: 100vh;
+        min-height: 100dvh;
     }
     .content-wrapper {
         max-width: 600px;
         margin: 0 auto;
         padding: 15px;
+        min-height: calc(100vh - 30px);
+        min-height: calc(100dvh - 30px);
+        display: flex;
+        flex-direction: column;
     }
     .detail-card {
         background: white;
         border-radius: 20px;
         overflow: hidden;
         box-shadow: 0 8px 30px rgba(255,107,53,0.12);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
     }
     /* 封面区域 */
     .cover-section {
         position: relative;
         background: linear-gradient(135deg, #FFE4CC 0%, #FFD4B8 100%);
+        flex-shrink: 0;
     }
     .cover-image {
         width: 100%;
@@ -90,6 +99,8 @@ $customCss = '
     /* 主体内容 */
     .detail-body {
         padding: 18px 16px 22px;
+        flex: 1;
+        min-height: 300px;
     }
     .manga-title {
         font-size: 1.25rem;
@@ -255,8 +266,9 @@ $customCss = '
     /* 返回按钮 */
     .bottom-back {
         text-align: center;
-        margin-top: 20px;
-        padding-bottom: 25px;
+        margin-top: auto;
+        padding: 25px 0;
+        flex-shrink: 0;
     }
     .bottom-back-btn {
         display: inline-flex;
