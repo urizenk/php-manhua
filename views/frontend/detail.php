@@ -176,69 +176,65 @@ $customCss = '
     .description-toggle:hover {
         text-decoration: underline;
     }
-    /* 资源链接区域 */
-    .resource-section {
+    /* 资源链接卡片 */
+    .resource-card {
+        background: #FFFBF5;
+        border-radius: 12px;
+        border: 1px solid #FFE8D0;
+        overflow: hidden;
         margin: 12px 0;
     }
-    .resource-item {
+    .resource-link-row {
         display: flex;
         align-items: center;
         padding: 14px 16px;
-        background: #FFFBF5;
-        border-radius: 10px;
-        margin-bottom: 10px;
         text-decoration: none;
         color: #0066CC;
         font-size: 0.88rem;
-        transition: all 0.2s ease;
-        border: 1px solid #FFE8D0;
+        transition: background 0.2s ease;
+        border-bottom: 1px solid #FFE8D0;
     }
-    .resource-item:hover {
+    .resource-link-row:last-child {
+        border-bottom: none;
+    }
+    .resource-link-row:hover {
         background: #FFF5EB;
-        border-color: #FFB366;
     }
-    .resource-item i {
+    .resource-link-row i {
         flex-shrink: 0;
         margin-right: 12px;
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: #FF8C42;
     }
-    .resource-item .link-text {
+    .resource-link-row .link-text {
         flex: 1;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        color: #0066CC;
     }
-    /* 提取码 - 与链接样式统一 */
-    .extract-code-box {
+    /* 提取码行 - 与链接行样式统一 */
+    .extract-code-row {
         display: flex;
         align-items: center;
         padding: 14px 16px;
-        background: #FFFBF5;
-        border-radius: 10px;
-        border: 1px solid #FFE8D0;
-    }
-    .extract-label {
-        color: #FF8C42;
         font-size: 0.88rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
     }
-    .extract-label i {
-        margin-right: 8px;
-        font-size: 1.1rem;
-    }
-    .extract-value {
-        font-family: "SF Mono", "Monaco", "Consolas", monospace;
+    .extract-code-row i {
+        flex-shrink: 0;
+        margin-right: 12px;
         font-size: 1rem;
+        color: #FF8C42;
+    }
+    .extract-code-row .extract-label {
+        color: #666;
+    }
+    .extract-code-row .extract-value {
+        font-family: "SF Mono", "Monaco", "Consolas", monospace;
         font-weight: 700;
         color: #D84315;
-        margin-left: 8px;
-        letter-spacing: 1px;
+        margin-left: 6px;
+        letter-spacing: 0.5px;
     }
     /* 章节列表 */
     .chapter-list {
@@ -413,34 +409,32 @@ include APP_PATH . '/views/layouts/header.php';
             <!-- 资源链接 -->
             <?php if (!empty($manga['resource_link']) || !empty($manga['extract_code'])): ?>
                 <div class="section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
-                <div class="resource-section">
+                <div class="resource-card">
                     <?php if (!empty($manga['resource_link'])): ?>
                         <?php 
                         // 分割多行链接
                         $links = preg_split('/[\r\n]+/', trim($manga['resource_link']));
-                        $linkIndex = 0;
                         foreach ($links as $link): 
                             $link = trim($link);
                             if (empty($link)) continue;
-                            $linkIndex++;
                             // 检查是否是有效的URL
                             $isUrl = preg_match('/^https?:\/\//i', $link);
                             // 显示简短版本
                             $displayLink = $link;
-                            if (mb_strlen($link) > 45) {
-                                $displayLink = mb_substr($link, 0, 42) . '...';
+                            if (mb_strlen($link) > 40) {
+                                $displayLink = mb_substr($link, 0, 37) . '...';
                             }
                         ?>
                             <?php if ($isUrl): ?>
                                 <a href="<?php echo htmlspecialchars($link); ?>" 
                                    target="_blank" 
-                                   class="resource-item"
+                                   class="resource-link-row"
                                    title="<?php echo htmlspecialchars($link); ?>">
                                     <i class="bi bi-box-arrow-up-right"></i>
                                     <span class="link-text"><?php echo htmlspecialchars($displayLink); ?></span>
                                 </a>
                             <?php else: ?>
-                                <div class="resource-item" style="color: #666; cursor: default; border-style: dashed;">
+                                <div class="resource-link-row" style="color: #666; cursor: default;">
                                     <i class="bi bi-info-circle"></i>
                                     <span class="link-text"><?php echo htmlspecialchars($link); ?></span>
                                 </div>
@@ -449,10 +443,9 @@ include APP_PATH . '/views/layouts/header.php';
                     <?php endif; ?>
                     
                     <?php if (!empty($manga['extract_code'])): ?>
-                        <div class="extract-code-box">
-                            <span class="extract-label">
-                                <i class="bi bi-key-fill"></i>提取码：
-                            </span>
+                        <div class="extract-code-row">
+                            <i class="bi bi-key-fill"></i>
+                            <span class="extract-label">提取码：</span>
                             <span class="extract-value"><?php echo htmlspecialchars($manga['extract_code']); ?></span>
                         </div>
                     <?php endif; ?>
