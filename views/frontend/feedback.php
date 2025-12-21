@@ -10,14 +10,17 @@ $config  = $GLOBALS['config'] ?? null;
 
 $pageTitle = '资源失效反馈';
 
-// 从数据库读取微博配置
-$weiboConfig = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text')");
-$weiboSettings = [];
-foreach ($weiboConfig as $row) {
-    $weiboSettings[$row['config_key']] = $row['config_value'];
+// 从数据库读取配置
+$configRows = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text', 'feedback_qq', 'feedback_email', 'feedback_notice')");
+$configs = [];
+foreach ($configRows as $row) {
+    $configs[$row['config_key']] = $row['config_value'];
 }
-$weiboUrl  = $weiboSettings['weibo_url'] ?? 'https://weibo.com/';
-$weiboText = $weiboSettings['weibo_text'] ?? '微博@资源小站';
+$weiboUrl  = $configs['weibo_url'] ?? 'https://weibo.com/';
+$weiboText = $configs['weibo_text'] ?? '微博@资源小站';
+$feedbackQQ = $configs['feedback_qq'] ?? '';
+$feedbackEmail = $configs['feedback_email'] ?? '';
+$feedbackNotice = $configs['feedback_notice'] ?? '如果您发现资源链接失效、无法访问或其他问题，请通过以下方式联系我们。';
 
 $customCss = '
 <style>
@@ -158,16 +161,14 @@ include APP_PATH . '/views/layouts/header.php';
     <!-- 提示信息 -->
     <div class="notice-box">
         <div class="notice-title">📢 反馈须知</div>
-        <p class="notice-text">
-            如果您发现资源链接失效、无法访问或其他问题，请通过以下方式联系我们。
-            反馈时请说明具体的资源名称和问题描述，我们会尽快处理。
-        </p>
+        <p class="notice-text"><?php echo nl2br(htmlspecialchars($feedbackNotice)); ?></p>
     </div>
 
     <!-- 联系方式 -->
     <div class="content-card">
         <h2 class="content-title">📞 联系方式</h2>
         <ul class="contact-list">
+            <?php if ($weiboUrl): ?>
             <li class="contact-item">
                 <div class="contact-icon">
                     <i class="bi bi-sina-weibo"></i>
@@ -182,6 +183,8 @@ include APP_PATH . '/views/layouts/header.php';
                     </div>
                 </div>
             </li>
+            <?php endif; ?>
+            <?php if ($feedbackQQ): ?>
             <li class="contact-item">
                 <div class="contact-icon">
                     <i class="bi bi-chat-dots"></i>
@@ -189,10 +192,12 @@ include APP_PATH . '/views/layouts/header.php';
                 <div class="contact-info">
                     <div class="contact-name">QQ群</div>
                     <div class="contact-detail">
-                        群号：<span class="contact-link">123456789</span>
+                        群号：<span class="contact-link"><?php echo htmlspecialchars($feedbackQQ); ?></span>
                     </div>
                 </div>
             </li>
+            <?php endif; ?>
+            <?php if ($feedbackEmail): ?>
             <li class="contact-item">
                 <div class="contact-icon">
                     <i class="bi bi-envelope"></i>
@@ -201,10 +206,11 @@ include APP_PATH . '/views/layouts/header.php';
                     <div class="contact-name">邮箱反馈</div>
                     <div class="contact-detail">
                         发送至：
-                        <a href="mailto:feedback@example.com" class="contact-link">feedback@example.com</a>
+                        <a href="mailto:<?php echo htmlspecialchars($feedbackEmail); ?>" class="contact-link"><?php echo htmlspecialchars($feedbackEmail); ?></a>
                     </div>
                 </div>
             </li>
+            <?php endif; ?>
         </ul>
     </div>
 

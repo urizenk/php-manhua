@@ -113,6 +113,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_config'])) {
                 );
             }
             
+            // 更新失效反馈配置
+            if (isset($_POST['feedback_qq'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('feedback_qq', ?, 'QQ群号') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['feedback_qq'], $_POST['feedback_qq']]
+                );
+            }
+            if (isset($_POST['feedback_email'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('feedback_email', ?, '反馈邮箱') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['feedback_email'], $_POST['feedback_email']]
+                );
+            }
+            if (isset($_POST['feedback_notice'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('feedback_notice', ?, '反馈须知') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['feedback_notice'], $_POST['feedback_notice']]
+                );
+            }
+            
+            // 更新防走丢配置
+            if (isset($_POST['backup_urls']) && is_array($_POST['backup_urls'])) {
+                $urls = [];
+                $names = $_POST['backup_names'] ?? [];
+                foreach ($_POST['backup_urls'] as $i => $url) {
+                    $url = trim($url);
+                    $name = trim($names[$i] ?? '');
+                    if ($url) {
+                        $urls[] = ['name' => $name ?: '备用地址', 'url' => $url];
+                    }
+                }
+                $urlsJson = json_encode($urls, JSON_UNESCAPED_UNICODE);
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('backup_urls', ?, '备用地址列表') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$urlsJson, $urlsJson]
+                );
+            }
+            if (isset($_POST['backup_notice'])) {
+                $db->execute(
+                    "INSERT INTO site_config (config_key, config_value, description) 
+                     VALUES ('backup_notice', ?, '防走丢提示') 
+                     ON DUPLICATE KEY UPDATE config_value = ?",
+                    [$_POST['backup_notice'], $_POST['backup_notice']]
+                );
+            }
+            
             $db->commit();
             $message = '配置保存成功！';
             $messageType = 'success';
@@ -141,6 +195,13 @@ $weiboText = $configs['weibo_text'] ?? '微博@资源小站';
 $homepageRedirectUrl = $configs['homepage_redirect_url'] ?? '';
 $accessCodeUrls = json_decode($configs['access_code_urls'] ?? '[]', true) ?: [];
 $accessCodeTutorial = $configs['access_code_tutorial'] ?? '';
+// 失效反馈配置
+$feedbackQQ = $configs['feedback_qq'] ?? '';
+$feedbackEmail = $configs['feedback_email'] ?? '';
+$feedbackNotice = $configs['feedback_notice'] ?? '';
+// 防走丢配置
+$backupUrls = json_decode($configs['backup_urls'] ?? '[]', true) ?: [];
+$backupNotice = $configs['backup_notice'] ?? '';
 
 ?>
 
@@ -445,6 +506,99 @@ $accessCodeTutorial = $configs['access_code_tutorial'] ?? '';
                     </div>
                 </div>
 
+                <!-- 失效反馈配置 -->
+                <div class="config-section">
+                    <div class="section-title">
+                        <i class="bi bi-chat-dots"></i>
+                        失效反馈页面配置
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="feedback_qq" class="form-label">QQ群号</label>
+                        <input type="text" class="form-control" id="feedback_qq" name="feedback_qq" 
+                               value="<?php echo htmlspecialchars($feedbackQQ); ?>" 
+                               placeholder="123456789">
+                        <div class="help-text">失效反馈页面显示的QQ群号，留空则不显示</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="feedback_email" class="form-label">反馈邮箱</label>
+                        <input type="email" class="form-control" id="feedback_email" name="feedback_email" 
+                               value="<?php echo htmlspecialchars($feedbackEmail); ?>" 
+                               placeholder="feedback@example.com">
+                        <div class="help-text">失效反馈页面显示的邮箱地址，留空则不显示</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="feedback_notice" class="form-label">反馈须知</label>
+                        <textarea class="form-control" id="feedback_notice" name="feedback_notice" 
+                                  rows="3" placeholder="输入反馈须知文本"><?php echo htmlspecialchars($feedbackNotice); ?></textarea>
+                        <div class="help-text">失效反馈页面顶部的提示文字</div>
+                    </div>
+                </div>
+
+                <!-- 防走丢配置 -->
+                <div class="config-section">
+                    <div class="section-title">
+                        <i class="bi bi-geo-alt"></i>
+                        防走丢页面配置
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">备用地址列表 <span class="text-muted">(可添加多个)</span></label>
+                        <div id="backup-urls-container">
+                            <?php if (empty($backupUrls)): ?>
+                                <div class="backup-item mb-2">
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-md-3">
+                                            <input type="text" class="form-control form-control-sm" name="backup_names[]" placeholder="名称">
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="url" class="form-control form-control-sm" name="backup_urls[]" placeholder="https://备用地址">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-backup-btn">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($backupUrls as $item): ?>
+                                    <div class="backup-item mb-2">
+                                        <div class="row g-2 align-items-center">
+                                            <div class="col-md-3">
+                                                <input type="text" class="form-control form-control-sm" name="backup_names[]" 
+                                                       value="<?php echo htmlspecialchars($item['name'] ?? ''); ?>" placeholder="名称">
+                                            </div>
+                                            <div class="col-md-7">
+                                                <input type="url" class="form-control form-control-sm" name="backup_urls[]" 
+                                                       value="<?php echo htmlspecialchars($item['url'] ?? ''); ?>" placeholder="https://备用地址">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-backup-btn">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                        <button type="button" id="add-backup-btn" class="btn btn-outline-success btn-sm mt-2">
+                            <i class="bi bi-plus-circle"></i> 添加备用地址
+                        </button>
+                        <div class="help-text">配置多个备用访问地址，留空则不显示</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="backup_notice" class="form-label">温馨提示</label>
+                        <textarea class="form-control" id="backup_notice" name="backup_notice" 
+                                  rows="3" placeholder="输入温馨提示文本"><?php echo htmlspecialchars($backupNotice); ?></textarea>
+                        <div class="help-text">防走丢页面顶部的提示文字</div>
+                    </div>
+                </div>
+
                 <!-- 操作按钮 -->
                 <div class="d-flex gap-3 justify-content-center">
                     <button type="submit" name="save_config" class="btn btn-primary btn-save">
@@ -503,12 +657,50 @@ $accessCodeTutorial = $configs['access_code_tutorial'] ?? '';
                 var urlItem = e.target.closest('.url-item');
                 if (urlItem) {
                     var container = document.getElementById('access-code-urls-container');
-                    // 如果只剩一个，清空内容而不是删除
                     if (container.querySelectorAll('.url-item').length <= 1) {
                         urlItem.querySelector('input[name="access_code_names[]"]').value = '';
                         urlItem.querySelector('input[name="access_code_urls[]"]').value = '';
                     } else {
                         urlItem.remove();
+                    }
+                }
+            }
+        });
+        
+        // 动态添加备用地址
+        document.getElementById('add-backup-btn').addEventListener('click', function() {
+            var container = document.getElementById('backup-urls-container');
+            var newItem = document.createElement('div');
+            newItem.className = 'backup-item mb-2';
+            newItem.innerHTML = `
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm" name="backup_names[]" placeholder="名称">
+                    </div>
+                    <div class="col-md-7">
+                        <input type="url" class="form-control form-control-sm" name="backup_urls[]" placeholder="https://备用地址">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-backup-btn">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newItem);
+        });
+        
+        // 删除备用地址
+        document.getElementById('backup-urls-container').addEventListener('click', function(e) {
+            if (e.target.closest('.remove-backup-btn')) {
+                var item = e.target.closest('.backup-item');
+                if (item) {
+                    var container = document.getElementById('backup-urls-container');
+                    if (container.querySelectorAll('.backup-item').length <= 1) {
+                        item.querySelector('input[name="backup_names[]"]').value = '';
+                        item.querySelector('input[name="backup_urls[]"]').value = '';
+                    } else {
+                        item.remove();
                     }
                 }
             }

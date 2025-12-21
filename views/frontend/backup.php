@@ -10,14 +10,16 @@ $config  = $GLOBALS['config'] ?? null;
 
 $pageTitle = '备用地址';
 
-// 从数据库读取微博配置
-$weiboConfig = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text')");
-$weiboSettings = [];
-foreach ($weiboConfig as $row) {
-    $weiboSettings[$row['config_key']] = $row['config_value'];
+// 从数据库读取配置
+$configRows = $db->query("SELECT config_key, config_value FROM site_config WHERE config_key IN ('weibo_url', 'weibo_text', 'backup_urls', 'backup_notice')");
+$configs = [];
+foreach ($configRows as $row) {
+    $configs[$row['config_key']] = $row['config_value'];
 }
-$weiboUrl  = $weiboSettings['weibo_url'] ?? 'https://weibo.com/';
-$weiboText = $weiboSettings['weibo_text'] ?? '微博@资源小站';
+$weiboUrl  = $configs['weibo_url'] ?? 'https://weibo.com/';
+$weiboText = $configs['weibo_text'] ?? '微博@资源小站';
+$backupUrls = json_decode($configs['backup_urls'] ?? '[]', true) ?: [];
+$backupNotice = $configs['backup_notice'] ?? '为防止主站无法访问，请收藏以下备用地址。';
 
 $customCss = '
 <style>
@@ -149,43 +151,36 @@ include APP_PATH . '/views/layouts/header.php';
 
     <div class="notice-box">
         <div class="notice-title">💡 温馨提示</div>
-        <p class="notice-text">
-            为防止主站无法访问，请收藏以下备用地址。建议将地址保存到浏览器书签或记事本中。
-        </p>
+        <p class="notice-text"><?php echo nl2br(htmlspecialchars($backupNotice)); ?></p>
     </div>
 
+    <?php if (!empty($backupUrls)): ?>
     <div class="content-card">
         <h2 class="content-title">🔗 备用访问地址</h2>
         <ul class="link-list">
+            <?php 
+            $icons = ['1-circle', '2-circle', '3-circle', '4-circle', '5-circle', '6-circle', '7-circle', '8-circle', '9-circle'];
+            $index = 0;
+            foreach ($backupUrls as $item): 
+                $name = $item['name'] ?? '备用地址 ' . ($index + 1);
+                $url = $item['url'] ?? '';
+                if (empty($url)) continue;
+                $icon = $icons[$index % count($icons)];
+                $index++;
+            ?>
             <li class="link-item">
                 <div class="link-header">
-                    <div class="link-icon"><i class="bi bi-1-circle"></i></div>
-                    <span class="link-name">备用地址 1</span>
+                    <div class="link-icon"><i class="bi bi-<?php echo $icon; ?>"></i></div>
+                    <span class="link-name"><?php echo htmlspecialchars($name); ?></span>
                 </div>
-                <a href="https://backup1.example.com" target="_blank" class="link-url">
-                    https://backup1.example.com
+                <a href="<?php echo htmlspecialchars($url); ?>" target="_blank" class="link-url">
+                    <?php echo htmlspecialchars($url); ?>
                 </a>
             </li>
-            <li class="link-item">
-                <div class="link-header">
-                    <div class="link-icon"><i class="bi bi-2-circle"></i></div>
-                    <span class="link-name">备用地址 2</span>
-                </div>
-                <a href="https://backup2.example.com" target="_blank" class="link-url">
-                    https://backup2.example.com
-                </a>
-            </li>
-            <li class="link-item">
-                <div class="link-header">
-                    <div class="link-icon"><i class="bi bi-3-circle"></i></div>
-                    <span class="link-name">备用地址 3</span>
-                </div>
-                <a href="https://backup3.example.com" target="_blank" class="link-url">
-                    https://backup3.example.com
-                </a>
-            </li>
+            <?php endforeach; ?>
         </ul>
     </div>
+    <?php endif; ?>
 
     <div class="content-card">
         <h2 class="content-title">📱 社交媒体</h2>
