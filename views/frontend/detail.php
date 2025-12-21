@@ -419,11 +419,21 @@ include APP_PATH . '/views/layouts/header.php';
                         <?php endforeach; ?>
                     <?php endif; ?>
                     
-                    <?php if (!empty($manga['extract_code'])): ?>
-                        <div class="resource-row" style="cursor: default;">
-                            <i class="bi bi-key-fill"></i>
-                            <span class="row-text">提取码：<?php echo htmlspecialchars($manga['extract_code']); ?></span>
-                        </div>
+                    <?php if (!empty($manga['extract_code'])): 
+                        $extractCode = $manga['extract_code'];
+                        $isExtractUrl = preg_match('/^https?:\/\//i', $extractCode);
+                    ?>
+                        <?php if ($isExtractUrl): ?>
+                            <a href="<?php echo htmlspecialchars($extractCode); ?>" target="_blank" class="resource-row" title="<?php echo htmlspecialchars($extractCode); ?>">
+                                <i class="bi bi-key-fill"></i>
+                                <span class="row-text">提取码：<?php echo htmlspecialchars($extractCode); ?></span>
+                            </a>
+                        <?php else: ?>
+                            <div class="resource-row" style="cursor: default;">
+                                <i class="bi bi-key-fill"></i>
+                                <span class="row-text">提取码：<?php echo htmlspecialchars($extractCode); ?></span>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
