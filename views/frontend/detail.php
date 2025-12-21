@@ -178,36 +178,30 @@ $customCss = '
     }
     /* 资源链接区域 */
     .resource-section {
-        background: #FFFBF5;
-        border-radius: 12px;
-        padding: 12px;
         margin: 12px 0;
-        border: 1px solid #FFE8D0;
     }
     .resource-item {
         display: flex;
         align-items: center;
-        padding: 12px 14px;
-        background: white;
+        padding: 14px 16px;
+        background: #FFFBF5;
         border-radius: 10px;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         text-decoration: none;
         color: #0066CC;
-        font-size: 0.85rem;
+        font-size: 0.88rem;
         transition: all 0.2s ease;
-        border: 1px solid #E8E8E8;
-    }
-    .resource-item:last-of-type {
-        margin-bottom: 0;
+        border: 1px solid #FFE8D0;
     }
     .resource-item:hover {
-        background: #F0F7FF;
-        border-color: #0066CC;
+        background: #FFF5EB;
+        border-color: #FFB366;
     }
     .resource-item i {
         flex-shrink: 0;
-        margin-right: 10px;
-        font-size: 1rem;
+        margin-right: 12px;
+        font-size: 1.1rem;
+        color: #FF8C42;
     }
     .resource-item .link-text {
         flex: 1;
@@ -215,59 +209,36 @@ $customCss = '
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        color: #0066CC;
     }
-    .resource-item .link-full {
-        display: none;
-    }
-    .resource-item.expanded .link-text {
-        white-space: normal;
-        word-break: break-all;
-    }
-    .link-toggle {
-        flex-shrink: 0;
-        margin-left: 8px;
-        padding: 4px 8px;
-        background: #F5F5F5;
-        border: none;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        color: #666;
-        cursor: pointer;
-    }
-    .link-toggle:hover {
-        background: #E8E8E8;
-    }
-    /* 提取码 */
+    /* 提取码 - 与链接样式统一 */
     .extract-code-box {
         display: flex;
         align-items: center;
-        padding: 12px 14px;
-        background: white;
+        padding: 14px 16px;
+        background: #FFFBF5;
         border-radius: 10px;
-        border: 1px dashed #FFB366;
-        margin-top: 8px;
+        border: 1px solid #FFE8D0;
     }
     .extract-label {
-        color: #E65100;
-        font-size: 0.85rem;
+        color: #FF8C42;
+        font-size: 0.88rem;
         font-weight: 600;
         display: flex;
         align-items: center;
         white-space: nowrap;
     }
     .extract-label i {
-        margin-right: 6px;
+        margin-right: 8px;
+        font-size: 1.1rem;
     }
     .extract-value {
         font-family: "SF Mono", "Monaco", "Consolas", monospace;
-        font-size: 0.95rem;
+        font-size: 1rem;
         font-weight: 700;
         color: #D84315;
-        background: #FFF3E0;
-        padding: 4px 10px;
-        border-radius: 6px;
-        margin-left: 10px;
-        letter-spacing: 0.5px;
+        margin-left: 8px;
+        letter-spacing: 1px;
     }
     /* 章节列表 */
     .chapter-list {
