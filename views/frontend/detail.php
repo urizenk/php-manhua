@@ -396,7 +396,7 @@ include APP_PATH . '/views/layouts/header.php';
                             <?php if ($isUrl): ?>
                                 <a href="<?php echo htmlspecialchars($link); ?>" target="_blank" class="resource-row" title="<?php echo htmlspecialchars($link); ?>">
                                     <i class="bi bi-link-45deg"></i>
-                                    <span class="row-text"><?php echo htmlspecialchars($link); ?></span>
+                                    <span class="row-text">资源链接：<?php echo htmlspecialchars($link); ?></span>
                                 </a>
                             <?php else: ?>
                                 <div class="resource-row" style="cursor: default;">
