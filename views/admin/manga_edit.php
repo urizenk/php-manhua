@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
         $mangaTags = trim($_POST['manga_tags'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $coverPosition = $_POST['cover_position'] ?? 'center';
+        $sortOrder = (int)($_POST['sort_order'] ?? 0);
         
         $errors = [];
         
@@ -80,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
             'manga_tags' => $mangaTags,
             'description' => $description,
             'cover_position' => $coverPosition,
+            'sort_order' => $sortOrder,
         ];
         
         if ($tagId) {
@@ -301,6 +303,19 @@ include APP_PATH . '/views/admin/layout_header.php';
                     <label class="form-label">漫画简介（可选）</label>
                     <textarea class="form-control" name="description" rows="4" 
                               placeholder="输入漫画简介或说明"><?php echo htmlspecialchars($manga['description']); ?></textarea>
+                </div>
+            </div>
+            
+            <!-- 排序 -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-sort-numeric-down"></i> 排序</div>
+                
+                <div class="mb-3">
+                    <label class="form-label">排序权重</label>
+                    <input type="number" class="form-control" name="sort_order" 
+                           value="<?php echo (int)($manga['sort_order'] ?? 0); ?>"
+                           placeholder="数字越大排越前面">
+                    <small class="text-muted">数字越大，在列表中排序越靠前</small>
                 </div>
             </div>
             

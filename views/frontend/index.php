@@ -210,17 +210,20 @@ $customCss = '
         border-color: #FF6B35;
     }
     .btn-access-submit {
-        width: 100%;
-        padding: 14px;
+        width: auto;
+        min-width: 120px;
+        padding: 10px 25px;
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         color: white;
         border: none;
-        border-radius: 10px;
-        font-size: 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
         font-weight: bold;
         cursor: pointer;
         transition: all 0.3s ease;
         -webkit-tap-highlight-color: transparent;
+        margin: 0 auto;
+        display: block;
     }
     .btn-access-submit:hover, .btn-access-submit:active {
         transform: translateY(-2px);
@@ -228,47 +231,69 @@ $customCss = '
     }
     .access-tips {
         text-align: center;
-        margin-top: 15px;
+        margin-top: 20px;
         color: #666;
         font-size: 0.9rem;
     }
     .access-tips p {
         margin: 8px 0;
     }
-    .tutorial-text {
-        background: #FFF8E1;
-        padding: 12px 15px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        line-height: 1.6;
-        color: #5D4037;
-        font-size: 0.9rem;
-        text-align: left;
-        border-left: 3px solid #FFB74D;
-    }
-    .get-code-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-        margin-top: 10px;
-    }
-    .btn-get-code {
+    .tutorial-link {
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        padding: 10px 18px;
-        background: #FFF3E0;
-        color: #E65100;
-        border: 2px solid #FFB74D;
-        border-radius: 25px;
+        color: #FF6B35;
         text-decoration: none;
         font-weight: bold;
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    .tutorial-link:hover {
+        text-decoration: underline;
+        color: #E65100;
+    }
+    .get-code-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #FFF3E0;
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px dashed #FFB74D;
+        color: #E65100;
         font-size: 0.85rem;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+    .get-code-links {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .btn-get-code {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1rem;
         transition: all 0.3s ease;
     }
+    .btn-get-code:nth-child(2) {
+        background: linear-gradient(135deg, #673AB7 0%, #512DA8 100%);
+    }
+    .btn-get-code:nth-child(3) {
+        background: linear-gradient(135deg, #3F51B5 0%, #303F9F 100%);
+    }
     .btn-get-code:hover, .btn-get-code:active {
-        background: #FFB74D;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         color: white;
     }
     
@@ -297,6 +322,60 @@ $customCss = '
             padding-bottom: env(safe-area-inset-bottom);
         }
     }
+    
+    /* 图片弹窗 */
+    .popup-image-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.85);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .popup-image-modal.show {
+        display: flex;
+    }
+    .popup-image-content {
+        max-width: 90%;
+        max-height: 80vh;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .popup-image-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        font-size: 2rem;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .popup-image-close:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    .popup-image-hint {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 0.9rem;
+        background: rgba(0,0,0,0.5);
+        padding: 8px 20px;
+        border-radius: 20px;
+    }
 </style>
 ';
 
@@ -310,6 +389,9 @@ $customJs = '
     var accessInput = document.getElementById("accessCode");
     var verifyBtn = document.getElementById("verifyBtn");
     var closeBtn = document.getElementById("modalClose");
+    var popupImageModal = document.getElementById("popupImageModal");
+    var popupImage = document.getElementById("popupImageContent");
+    var popupImageCloseBtn = document.getElementById("popupImageClose");
 
     if (!accessModal || !accessInput || !verifyBtn) {
         return;
@@ -327,6 +409,22 @@ $customJs = '
     function closeModal() {
         accessModal.classList.remove("show");
         document.body.style.overflow = "";
+    }
+    
+    function openPopupImage(imageUrl, navigateUrl) {
+        if (popupImageModal && popupImage) {
+            popupImage.src = imageUrl;
+            popupImageModal.classList.add("show");
+            popupImageModal.setAttribute("data-navigate-url", navigateUrl);
+            document.body.style.overflow = "hidden";
+        }
+    }
+    
+    function closePopupImage() {
+        if (popupImageModal) {
+            popupImageModal.classList.remove("show");
+            document.body.style.overflow = "";
+        }
     }
 
     function postVerify(code) {
@@ -363,6 +461,7 @@ $customJs = '
             e.preventDefault();
             targetUrl = card.getAttribute("data-url") || "";
             isExternal = card.getAttribute("data-external") === "1";
+            var popupImageUrl = card.getAttribute("data-popup-image") || "";
             
             if (!targetUrl) {
                 return;
@@ -374,6 +473,12 @@ $customJs = '
                 return;
             }
 
+            // 如果有弹窗图片，先显示图片
+            if (popupImageUrl && isVerified) {
+                openPopupImage(popupImageUrl, targetUrl);
+                return;
+            }
+
             if (isVerified) {
                 window.location.href = targetUrl;
                 return;
@@ -382,6 +487,30 @@ $customJs = '
             openModal();
         });
     });
+    
+    // 弹窗图片点击关闭并跳转
+    if (popupImageModal) {
+        popupImageModal.addEventListener("click", function(e) {
+            if (e.target === popupImageModal || e.target === popupImage) {
+                var navigateUrl = popupImageModal.getAttribute("data-navigate-url");
+                closePopupImage();
+                if (navigateUrl) {
+                    window.location.href = navigateUrl;
+                }
+            }
+        });
+    }
+    
+    if (popupImageCloseBtn) {
+        popupImageCloseBtn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            var navigateUrl = popupImageModal.getAttribute("data-navigate-url");
+            closePopupImage();
+            if (navigateUrl) {
+                window.location.href = navigateUrl;
+            }
+        });
+    }
 
     verifyBtn.addEventListener("click", function() {
         var code = accessInput.value.trim();
@@ -456,16 +585,20 @@ include APP_PATH . '/views/layouts/header.php';
         <?php if (empty($types)): ?>
             <p style="grid-column: span 2; color: #999;">尚未配置模块</p>
         <?php else: ?>
-            <?php foreach ($types as $type): ?>
+                <?php foreach ($types as $type): ?>
                 <?php
                     $code = $type['type_code'];
                     $icon = $type['icon'] ?? 'book';
                     $externalUrl = $type['external_url'] ?? '';
+                    $popupImage = $type['popup_image'] ?? '';
                     // 如果有外部链接，使用外部链接；否则使用内部模块链接
                     $url = $externalUrl ?: module_url($code);
                     $isExternal = !empty($externalUrl) ? '1' : '0';
                 ?>
-                <div class="category-item" data-url="<?php echo htmlspecialchars($url); ?>" data-external="<?php echo $isExternal; ?>">
+                <div class="category-item" 
+                     data-url="<?php echo htmlspecialchars($url); ?>" 
+                     data-external="<?php echo $isExternal; ?>"
+                     data-popup-image="<?php echo htmlspecialchars($popupImage); ?>">
                     <div class="category-icon">
                         <i class="bi bi-<?php echo htmlspecialchars($icon); ?>"></i>
                     </div>
@@ -483,6 +616,13 @@ include APP_PATH . '/views/layouts/header.php';
     </div>
 </div>
 
+<!-- 图片弹窗 -->
+<div class="popup-image-modal" id="popupImageModal">
+    <button type="button" class="popup-image-close" id="popupImageClose">&times;</button>
+    <img src="" alt="模块图片" class="popup-image-content" id="popupImageContent">
+    <div class="popup-image-hint">点击任意位置继续</div>
+</div>
+
 <!-- 访问码验证弹窗 -->
 <div class="access-modal" id="accessModal">
     <div class="access-modal-content">
@@ -494,7 +634,7 @@ include APP_PATH . '/views/layouts/header.php';
             <input type="text"
                    class="access-code-input"
                    id="accessCode"
-                   placeholder="输入访问码"
+                   placeholder="输入密码，不会就看下方取码教程"
                    autocomplete="off"
                    inputmode="text">
             <button type="button" class="btn-access-submit" id="verifyBtn">提交</button>
@@ -502,15 +642,28 @@ include APP_PATH . '/views/layouts/header.php';
             <?php if ($accessCodeTutorial || !empty($accessCodeUrls)): ?>
             <div class="access-tips">
                 <?php if ($accessCodeTutorial): ?>
-                    <div class="tutorial-text"><?php echo nl2br(htmlspecialchars($accessCodeTutorial)); ?></div>
+                    <?php 
+                    // 检查教程是否为链接
+                    $tutorialIsUrl = preg_match('/^https?:\/\//i', trim($accessCodeTutorial));
+                    ?>
+                    <?php if ($tutorialIsUrl): ?>
+                        <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank" class="tutorial-link">
+                            🎉取码教程
+                        </a>
+                    <?php else: ?>
+                        <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank" class="tutorial-link">
+                            🎉取码教程
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 
                 <?php if (!empty($accessCodeUrls)): ?>
+                    <div class="get-code-title">获取每日访问码👇</div>
                     <div class="get-code-links">
                         <?php foreach ($accessCodeUrls as $urlItem): ?>
                             <?php if (!empty($urlItem['url'])): ?>
                                 <a href="<?php echo htmlspecialchars($urlItem['url']); ?>" target="_blank" class="btn-get-code">
-                                    <i class="bi bi-box-arrow-up-right"></i> <?php echo htmlspecialchars($urlItem['name'] ?: '获取访问码'); ?>
+                                    <?php echo htmlspecialchars($urlItem['name'] ?: '获取访问码'); ?>
                                 </a>
                             <?php endif; ?>
                         <?php endforeach; ?>

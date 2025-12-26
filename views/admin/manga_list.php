@@ -101,7 +101,7 @@ $sql = "SELECT m.*, t.type_name, tg.tag_name
         LEFT JOIN manga_types t ON m.type_id = t.id
         LEFT JOIN tags tg ON m.tag_id = tg.id
         WHERE {$whereClause}
-        ORDER BY m.created_at DESC
+        ORDER BY m.sort_order DESC, m.created_at DESC
         LIMIT {$perPage} OFFSET " . (($page - 1) * $perPage);
 
 $mangas = $db->query($sql, $params);
@@ -245,21 +245,22 @@ include APP_PATH . '/views/admin/layout_header.php';
             <p class="text-muted text-center py-5">暂无数据</p>
         <?php else: ?>
             <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th width="40">
-                            <input type="checkbox" id="checkAll">
-                        </th>
-                        <th width="60">ID</th>
-                        <th width="80">封面</th>
-                        <th>标题</th>
-                        <th width="120">类型</th>
-                        <th width="120">标签</th>
-                        <th width="100">状态</th>
-                        <th width="150">添加时间</th>
-                        <th width="180">操作</th>
-                    </tr>
-                </thead>
+                    <thead class="table-light">
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" id="checkAll">
+                            </th>
+                            <th width="60">ID</th>
+                            <th width="80">封面</th>
+                            <th>标题</th>
+                            <th width="120">类型</th>
+                            <th width="120">标签</th>
+                            <th width="80">排序</th>
+                            <th width="100">状态</th>
+                            <th width="150">添加时间</th>
+                            <th width="180">操作</th>
+                        </tr>
+                    </thead>
                 <tbody>
                     <?php foreach ($mangas as $manga): ?>
                         <tr>
@@ -288,6 +289,12 @@ include APP_PATH . '/views/admin/layout_header.php';
                             </td>
                             <td><?php echo htmlspecialchars($manga['type_name']); ?></td>
                             <td><?php echo htmlspecialchars($manga['tag_name'] ?? '-'); ?></td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm sort-input" 
+                                       data-id="<?php echo $manga['id']; ?>"
+                                       value="<?php echo (int)($manga['sort_order'] ?? 0); ?>"
+                                       style="width: 70px;">
+                            </td>
                             <td>
                                 <?php if ($manga['status'] === 'serializing'): ?>
                                     <span class="badge bg-info">连载中</span>
@@ -422,6 +429,35 @@ $(document).ready(function() {
                 }
             });
         }
+    });
+    
+    // 排序值更新
+    $(".sort-input").on("change", function() {
+        var id = $(this).data("id");
+        var sortOrder = $(this).val();
+        var csrfToken = $("input[name=\'csrf_token\']").val();
+        var $input = $(this);
+        
+        $.ajax({
+            url: "/admin88/api/update-sort.php",
+            type: "POST",
+            data: { 
+                id: id,
+                sort_order: sortOrder,
+                csrf_token: csrfToken
+            },
+            dataType: "json",
+            success: function(res) {
+                if (res.success) {
+                    $input.css("border-color", "#28a745");
+                    setTimeout(function() {
+                        $input.css("border-color", "");
+                    }, 1000);
+                } else {
+                    alert(res.message || "更新失败");
+                }
+            }
+        });
     });
 });
 </script>

@@ -24,11 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tagType = $_POST['tag_type'] ?? 'category';
             
             if ($typeId && $tagName) {
+                // 获取当前最小的sort_order，新标签排在最前面
+                $minSort = $db->queryOne(
+                    "SELECT MIN(sort_order) as min_sort FROM tags WHERE type_id = ?",
+                    [$typeId]
+                );
+                $newSortOrder = ($minSort['min_sort'] ?? 0) - 1;
+                
                 $result = $db->insert('tags', [
                     'type_id' => $typeId,
                     'tag_name' => $tagName,
                     'tag_type' => $tagType,
-                    'sort_order' => 0
+                    'sort_order' => $newSortOrder
                 ]);
                 
                 $message = $result ? '标签添加成功' : '标签添加失败';
@@ -39,25 +46,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'delete':
             $tagId = $_POST['tag_id'] ?? 0;
             if ($tagId) {
-                // 先将使用此标签的漫画移至"未分类"
-                $tagInfo = $db->queryOne("SELECT type_id FROM tags WHERE id = ?", [$tagId]);
+                // 获取标签信息
+                $tagInfo = $db->queryOne("SELECT type_id, tag_name FROM tags WHERE id = ?", [$tagId]);
                 if ($tagInfo) {
-                    $uncategorizedTag = $db->queryOne(
-                        "SELECT id FROM tags WHERE type_id = ? AND tag_name = '未分类'",
-                        [$tagInfo['type_id']]
+                    // 检查是否有漫画使用此标签
+                    $mangaCount = $db->queryOne(
+                        "SELECT COUNT(*) as cnt FROM mangas WHERE tag_id = ?",
+                        [$tagId]
                     );
                     
-                    if ($uncategorizedTag) {
-                        $db->execute(
-                            "UPDATE mangas SET tag_id = ? WHERE tag_id = ?",
-                            [$uncategorizedTag['id'], $tagId]
-                        );
+                    if ($mangaCount['cnt'] > 0) {
+                        // 如果删除的是"未分类"标签，将漫画的tag_id设为NULL
+                        if ($tagInfo['tag_name'] === '未分类') {
+                            $db->execute(
+                                "UPDATE mangas SET tag_id = NULL WHERE tag_id = ?",
+                                [$tagId]
+                            );
+                        } else {
+                            // 否则尝试移至"未分类"
+                            $uncategorizedTag = $db->queryOne(
+                                "SELECT id FROM tags WHERE type_id = ? AND tag_name = '未分类'",
+                                [$tagInfo['type_id']]
+                            );
+                            
+                            if ($uncategorizedTag) {
+                                $db->execute(
+                                    "UPDATE mangas SET tag_id = ? WHERE tag_id = ?",
+                                    [$uncategorizedTag['id'], $tagId]
+                                );
+                            } else {
+                                // 如果没有未分类标签，设为NULL
+                                $db->execute(
+                                    "UPDATE mangas SET tag_id = NULL WHERE tag_id = ?",
+                                    [$tagId]
+                                );
+                            }
+                        }
                     }
                 }
                 
                 // 删除标签
                 $result = $db->delete('tags', 'id = ?', [$tagId]);
-                $message = $result ? '标签已删除，关联漫画已移至"未分类"' : '删除失败';
+                $message = $result ? '标签已删除' : '删除失败';
                 $messageType = $result ? 'success' : 'danger';
             }
             break;
@@ -230,16 +260,14 @@ include APP_PATH . '/views/admin/layout_header.php';
                                         <i class="bi bi-pencil"></i> 编辑
                                     </button>
                                     
-                                    <?php if ($tag['tag_name'] !== '未分类'): ?>
-                                        <form method="POST" style="display:inline;" 
-                                              onsubmit="return confirm('确定删除此标签？关联的漫画将移至【未分类】');">
-                                            <input type="hidden" name="action" value="delete">
-                                            <input type="hidden" name="tag_id" value="<?php echo $tag['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash"></i> 删除
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
+                                    <form method="POST" style="display:inline;" 
+                                          onsubmit="return confirm('确定删除此标签？<?php echo $tag['manga_count'] > 0 ? '关联的' . $tag['manga_count'] . '个漫画将变为未分类状态' : ''; ?>');">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="tag_id" value="<?php echo $tag['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i> 删除
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

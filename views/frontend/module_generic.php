@@ -204,14 +204,9 @@ $customCss = '
         font-size: 1rem;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
     }
     .manga-link:hover {
         text-decoration: underline;
-    }
-    .manga-link::before {
-        content: "🔗";
-        font-size: 0.9rem;
     }
     .empty-state {
         text-align: center;
@@ -251,8 +246,14 @@ include APP_PATH . '/views/layouts/header.php';
         <h1 class="page-title"><?php echo htmlspecialchars($moduleName); ?></h1>
         
         <!-- Tip提示框 -->
+        <?php 
+        $tipText = $moduleType['tip_text'] ?? '';
+        if (!$tipText) {
+            $tipText = 'Tip：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新增漫画！';
+        }
+        ?>
         <div class="tip-box">
-            Tip：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新增漫画！
+            <?php echo htmlspecialchars($tipText); ?>
         </div>
         
         <!-- 返回按钮 -->

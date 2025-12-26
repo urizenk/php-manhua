@@ -18,7 +18,7 @@ $pageTitle   = '模块管理';
 $message     = '';
 $messageType = '';
 
-// 可选图标列表
+// 可选图标列表 - 基于 Bootstrap Icons https://icons.getbootstrap.com/
 $availableIcons = [
     'calendar-date' => '日历',
     'collection' => '合集',
@@ -45,6 +45,55 @@ $availableIcons = [
     'puzzle' => '拼图',
     'cup-hot' => '咖啡',
     'emoji-smile' => '笑脸',
+    // 新增常用图标
+    'house' => '房屋',
+    'person' => '人物',
+    'cart' => '购物车',
+    'bag' => '包',
+    'clock' => '时钟',
+    'bell' => '铃铛',
+    'sun' => '太阳',
+    'moon' => '月亮',
+    'cloud' => '云',
+    'umbrella' => '雨伞',
+    'tools' => '工具',
+    'gear' => '设置',
+    'shield' => '盾牌',
+    'key' => '钥匙',
+    'lock' => '锁',
+    'unlock' => '解锁',
+    'link' => '链接',
+    'download' => '下载',
+    'upload' => '上传',
+    'share' => '分享',
+    'broadcast' => '广播',
+    'mic' => '麦克风',
+    'volume-up' => '音量',
+    'palette' => '调色板',
+    'brush' => '画笔',
+    'pencil' => '铅笔',
+    'newspaper' => '报纸',
+    'journal' => '日记',
+    'card-text' => '卡片',
+    'easel' => '画架',
+    'vinyl' => '唱片',
+    'tv' => '电视',
+    'controller' => '游戏手柄',
+    'cup-straw' => '饮料',
+    'egg-fried' => '煎蛋',
+    'flower1' => '花朵1',
+    'flower2' => '花朵2',
+    'flower3' => '花朵3',
+    'globe' => '地球',
+    'airplane' => '飞机',
+    'rocket' => '火箭',
+    'balloon' => '气球',
+    'gem' => '宝石',
+    'award' => '奖牌',
+    'suit-heart' => '红心',
+    'suit-diamond' => '方块',
+    'suit-club' => '梅花',
+    'suit-spade' => '黑桃',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -64,6 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $needCover  = isset($_POST['need_cover']) ? 1 : 0;
                 $needStatus = isset($_POST['need_status']) ? 1 : 0;
                 $externalUrl = trim($_POST['external_url'] ?? '');
+                $tipText    = trim($_POST['tip_text'] ?? '');
+                $popupImage = trim($_POST['popup_image'] ?? '');
 
                 if ($typeName === '' || $typeCode === '') {
                     $message     = '类型名称和类型代码不能为空';
@@ -80,6 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'need_cover'  => $needCover,
                         'need_status' => $needStatus,
                         'external_url' => $externalUrl ?: null,
+                        'tip_text'    => $tipText ?: null,
+                        'popup_image' => $popupImage ?: null,
                     ]);
                     $message     = '模块添加成功';
                     $messageType = 'success';
@@ -98,6 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $needCover  = isset($_POST['need_cover']) ? 1 : 0;
                 $needStatus = isset($_POST['need_status']) ? 1 : 0;
                 $externalUrl = trim($_POST['external_url'] ?? '');
+                $tipText    = trim($_POST['tip_text'] ?? '');
+                $popupImage = trim($_POST['popup_image'] ?? '');
 
                 if ($id <= 0 || $typeName === '' || $typeCode === '') {
                     $message     = '参数不完整';
@@ -115,6 +170,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'need_cover'  => $needCover,
                         'need_status' => $needStatus,
                         'external_url' => $externalUrl ?: null,
+                        'tip_text'    => $tipText ?: null,
+                        'popup_image' => $popupImage ?: null,
                     ],
                     'id = ?',
                     [$id]
@@ -310,6 +367,14 @@ include APP_PATH . '/views/admin/layout_header.php';
                             <i class="bi bi-chevron-down ms-auto"></i>
                         </div>
                         <div class="icon-dropdown" id="addIconDropdown">
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm custom-icon-input" 
+                                       id="addCustomIconInput"
+                                       placeholder="输入自定义图标名（如 star-fill）">
+                                <small class="text-muted">
+                                    <a href="https://icons.getbootstrap.com/" target="_blank">查看所有图标</a>
+                                </small>
+                            </div>
                             <div class="icon-selector">
                                 <?php foreach ($availableIcons as $iconName => $iconLabel): ?>
                                     <div class="icon-option <?php echo $iconName === 'book' ? 'selected' : ''; ?>" 
@@ -345,6 +410,22 @@ include APP_PATH . '/views/admin/layout_header.php';
                 <div class="col-12">
                     <label class="form-label fw-semibold">外部跳转链接 <span class="text-muted small">(可选，用于失效反馈、防走丢等需要跳转到外部页面的模块)</span></label>
                     <input type="url" name="external_url" class="form-control" placeholder="https://example.com/feedback">
+                </div>
+            </div>
+            
+            <!-- Tip提示文字 -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">页面提示文字 <span class="text-muted small">(可选，显示在模块页面顶部的提示语)</span></label>
+                    <input type="text" name="tip_text" class="form-control" placeholder="如：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新增漫画！">
+                </div>
+            </div>
+            
+            <!-- 弹窗图片 -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">弹窗显示图片 <span class="text-muted small">(可选，点击模块后先显示此图片，再进入列表)</span></label>
+                    <input type="url" name="popup_image" class="form-control" placeholder="https://example.com/image.jpg 或 /uploads/xxx.jpg">
                 </div>
             </div>
         </form>
@@ -413,18 +494,20 @@ include APP_PATH . '/views/admin/layout_header.php';
             <!-- 桌面端表格视图 -->
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="60">ID</th>
-                            <th class="table-icon-cell">图标</th>
-                            <th>模块名称</th>
-                            <th>类型代码</th>
-                            <th>外部链接</th>
-                            <th width="80">排序</th>
-                            <th width="60">状态</th>
-                            <th width="160">操作</th>
-                        </tr>
-                    </thead>
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="60">ID</th>
+                                    <th class="table-icon-cell">图标</th>
+                                    <th>模块名称</th>
+                                    <th>类型代码</th>
+                                    <th>外部链接</th>
+                                    <th>提示文字</th>
+                                    <th>弹窗图片</th>
+                                    <th width="80">排序</th>
+                                    <th width="60">状态</th>
+                                    <th width="160">操作</th>
+                                </tr>
+                            </thead>
                     <tbody>
                         <?php foreach ($types as $type): ?>
                             <tr>
@@ -468,6 +551,21 @@ include APP_PATH . '/views/admin/layout_header.php';
                                         <?php if (!empty($type['external_url'])): ?>
                                             <a href="<?php echo htmlspecialchars($type['external_url']); ?>" target="_blank" class="btn btn-link btn-sm p-0 mt-1">
                                                 <i class="bi bi-box-arrow-up-right"></i> 测试
+                                            </a>
+                                        <?php endif; ?>
+                                </td>
+                                <td>
+                                        <input type="text" name="tip_text" class="form-control form-control-sm"
+                                               value="<?php echo htmlspecialchars($type['tip_text'] ?? ''); ?>"
+                                               placeholder="页面提示文字">
+                                </td>
+                                <td>
+                                        <input type="text" name="popup_image" class="form-control form-control-sm"
+                                               value="<?php echo htmlspecialchars($type['popup_image'] ?? ''); ?>"
+                                               placeholder="弹窗图片URL">
+                                        <?php if (!empty($type['popup_image'])): ?>
+                                            <a href="<?php echo htmlspecialchars($type['popup_image']); ?>" target="_blank" class="btn btn-link btn-sm p-0 mt-1">
+                                                <i class="bi bi-image"></i> 预览
                                             </a>
                                         <?php endif; ?>
                                 </td>
@@ -547,6 +645,25 @@ include APP_PATH . '/views/admin/layout_header.php';
                                     <?php if (!empty($type['external_url'])): ?>
                                         <a href="<?php echo htmlspecialchars($type['external_url']); ?>" target="_blank" class="btn btn-link btn-sm p-0">
                                             <i class="bi bi-box-arrow-up-right"></i> 测试链接
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label class="mobile-label">页面提示文字</label>
+                                    <input type="text" name="tip_text" class="form-control form-control-sm"
+                                           value="<?php echo htmlspecialchars($type['tip_text'] ?? ''); ?>"
+                                           placeholder="显示在页面顶部的提示">
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <label class="mobile-label">弹窗显示图片</label>
+                                    <input type="text" name="popup_image" class="form-control form-control-sm"
+                                           value="<?php echo htmlspecialchars($type['popup_image'] ?? ''); ?>"
+                                           placeholder="图片URL">
+                                    <?php if (!empty($type['popup_image'])): ?>
+                                        <a href="<?php echo htmlspecialchars($type['popup_image']); ?>" target="_blank" class="btn btn-link btn-sm p-0">
+                                            <i class="bi bi-image"></i> 预览图片
                                         </a>
                                     <?php endif; ?>
                                 </div>
@@ -632,6 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var addIconDropdown = document.getElementById('addIconDropdown');
     var addIconInput = document.getElementById('addIconInput');
     var addIconPreview = document.getElementById('addIconPreview');
+    var addCustomIconInput = document.getElementById('addCustomIconInput');
     
     if (addIconBtn) {
         addIconBtn.addEventListener('click', function(e) {
@@ -648,9 +766,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     o.classList.remove('selected');
                 });
                 this.classList.add('selected');
+                if (addCustomIconInput) addCustomIconInput.value = '';
                 addIconDropdown.classList.remove('show');
             });
         });
+        
+        // 自定义图标输入
+        if (addCustomIconInput) {
+            addCustomIconInput.addEventListener('input', function() {
+                var icon = this.value.trim();
+                if (icon) {
+                    addIconInput.value = icon;
+                    addIconPreview.innerHTML = '<i class="bi bi-' + icon + '"></i>';
+                    addIconDropdown.querySelectorAll('.icon-option').forEach(function(o) {
+                        o.classList.remove('selected');
+                    });
+                }
+            });
+            addCustomIconInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            addCustomIconInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addIconDropdown.classList.remove('show');
+                }
+            });
+        }
     }
     
     // 表格中的图标选择

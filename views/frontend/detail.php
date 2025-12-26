@@ -75,26 +75,31 @@ $customCss = '
         display: flex;
         flex-direction: column;
     }
-    /* 封面区域 */
+    /* 封面区域 - 更大的正方形展示 */
     .cover-section {
         position: relative;
         background: linear-gradient(135deg, #FFE4CC 0%, #FFD4B8 100%);
         flex-shrink: 0;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        max-height: 450px;
+        overflow: hidden;
     }
     .cover-image {
         width: 100%;
-        height: 280px;
+        height: 100%;
         object-fit: cover;
         display: block;
     }
     .no-cover {
-        height: 180px;
+        width: 100%;
+        height: 100%;
         background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 3.5rem;
+        font-size: 4rem;
     }
     /* 主体内容 */
     .detail-body {
@@ -296,8 +301,8 @@ $customCss = '
         .content-wrapper {
             padding: 10px;
         }
-        .cover-image {
-            height: 220px;
+        .cover-section {
+            max-height: 380px;
         }
         .detail-body {
             padding: 15px 15px 20px;
