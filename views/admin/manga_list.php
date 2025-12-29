@@ -21,40 +21,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['batch_action'])) {
         $message = 'CSRF验证失败，请刷新页面重试';
         $messageType = 'danger';
     } else {
-        $action = $_POST['batch_action'];
-        $ids = $_POST['manga_ids'] ?? [];
+        $action = $_POST['batch_action'] ?? '';
+        $rawIds = $_POST['manga_ids'] ?? [];
+        $ids = array_values(array_unique(array_filter(array_map('intval', (array)$rawIds))));
         
-        if (!empty($ids)) {
-        switch ($action) {
-            case 'delete':
-                $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                $db->execute("DELETE FROM mangas WHERE id IN ($placeholders)", $ids);
-                $message = '批量删除成功';
-                $messageType = 'success';
-                break;
-                
-            case 'change_tag':
-                $newTagId = $_POST['new_tag_id'] ?? 0;
-                if ($newTagId) {
+        if (empty($ids)) {
+            $message = '请至少选择一个漫画';
+            $messageType = 'warning';
+        } else {
+            switch ($action) {
+                case 'delete':
                     $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                    $params = array_merge([$newTagId], $ids);
-                    $db->execute("UPDATE mangas SET tag_id = ? WHERE id IN ($placeholders)", $params);
-                    $message = '批量修改标签成功';
-                    $messageType = 'success';
-                }
-                break;
-                
-            case 'change_status':
-                $newStatus = $_POST['new_status'] ?? '';
-                if ($newStatus) {
-                    $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                    $params = array_merge([$newStatus], $ids);
-                    $db->execute("UPDATE mangas SET status = ? WHERE id IN ($placeholders)", $params);
-                    $message = '批量修改状态成功';
-                    $messageType = 'success';
-                }
-                break;
-        }
+
+                    // 先获取封面图路径，删除成功后清理文件
+                    $covers = $db->query("SELECT id, cover_image FROM mangas WHERE id IN ($placeholders)", $ids);
+                    $affected = $db->execute("DELETE FROM mangas WHERE id IN ($placeholders)", $ids);
+
+                    if ($affected !== false) {
+                        foreach ($covers as $row) {
+                            if (!empty($row['cover_image'])) {
+                                $imagePath = APP_PATH . $row['cover_image'];
+                                if (file_exists($imagePath)) {
+                                    @unlink($imagePath);
+                                }
+                            }
+                        }
+                        $message = '批量删除成功';
+                        $messageType = 'success';
+                    } else {
+                        $message = '批量删除失败';
+                        $messageType = 'danger';
+                    }
+                    break;
+
+                case 'change_tag':
+                    $newTagId = (int)($_POST['new_tag_id'] ?? 0);
+                    if ($newTagId) {
+                        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                        $params = array_merge([$newTagId], $ids);
+                        $affected = $db->execute("UPDATE mangas SET tag_id = ? WHERE id IN ($placeholders)", $params);
+                        if ($affected !== false) {
+                            $message = '批量修改标签成功';
+                            $messageType = 'success';
+                        } else {
+                            $message = '批量修改标签失败';
+                            $messageType = 'danger';
+                        }
+                    } else {
+                        $message = '请选择要修改到的标签';
+                        $messageType = 'warning';
+                    }
+                    break;
+
+                case 'change_status':
+                    $newStatus = trim((string)($_POST['new_status'] ?? ''));
+                    if ($newStatus !== '') {
+                        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                        $params = array_merge([$newStatus], $ids);
+                        $affected = $db->execute("UPDATE mangas SET status = ? WHERE id IN ($placeholders)", $params);
+                        if ($affected !== false) {
+                            $message = '批量修改状态成功';
+                            $messageType = 'success';
+                        } else {
+                            $message = '批量修改状态失败';
+                            $messageType = 'danger';
+                        }
+                    } else {
+                        $message = '请选择要修改到的状态';
+                        $messageType = 'warning';
+                    }
+                    break;
+
+                default:
+                    $message = '请选择批量操作类型';
+                    $messageType = 'warning';
+                    break;
+            }
         }
     }
 }
@@ -377,6 +419,9 @@ $(document).ready(function() {
     
     // 批量表单提交
     $("#batchForm").submit(function(e) {
+        // 清理旧的隐藏字段，避免二次提交重复
+        $("#batchForm").find("input[name='manga_ids[]']").remove();
+
         var action = $("#batchAction").val();
         var checkedIds = [];
         
@@ -465,5 +510,3 @@ $(document).ready(function() {
 
 include APP_PATH . '/views/admin/layout_footer.php';
 ?>
-
-

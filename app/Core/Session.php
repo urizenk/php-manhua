@@ -10,6 +10,7 @@ class Session
 {
     private static $started = false;
     private $db = null;
+    private $sessionConfig = [];
 
     public function __construct($config = [])
     {
@@ -21,41 +22,63 @@ class Session
      */
     public function start($config = [])
     {
+        $this->sessionConfig = is_array($config) ? $config : [];
+
         if (self::$started) {
             return;
         }
 
-        if (!empty($config['name'])) {
-            session_name($config['name']);
+        if (!empty($this->sessionConfig['name'])) {
+            session_name($this->sessionConfig['name']);
         }
 
-        if (!empty($config['lifetime'])) {
-            ini_set('session.gc_maxlifetime', $config['lifetime']);
+        $lifetime = !empty($this->sessionConfig['lifetime']) ? (int)$this->sessionConfig['lifetime'] : 0;
+        $effectiveLifetime = $lifetime > 0 ? max($lifetime, 43200) : 43200;
+        $this->sessionConfig['lifetime'] = $effectiveLifetime;
+        ini_set('session.gc_maxlifetime', (string)$effectiveLifetime);
+        ini_set('session.cookie_lifetime', (string)$effectiveLifetime);
+
+        $cookieHttpOnly = !empty($this->sessionConfig['cookie_httponly']);
+        $cookieSecure = !empty($this->sessionConfig['cookie_secure']);
+        $cookieSameSite = !empty($this->sessionConfig['cookie_samesite']) ? (string)$this->sessionConfig['cookie_samesite'] : null;
+
+        if ($cookieHttpOnly) {
+            ini_set('session.cookie_httponly', '1');
         }
 
-        if (!empty($config['cookie_httponly'])) {
-            ini_set('session.cookie_httponly', 1);
+        if ($cookieSecure) {
+            ini_set('session.cookie_secure', '1');
         }
 
-        if (!empty($config['cookie_secure'])) {
-            ini_set('session.cookie_secure', 1);
+        if ($cookieSameSite) {
+            ini_set('session.cookie_samesite', $cookieSameSite);
+        }
+
+        if (!headers_sent()) {
+            $cookieParams = session_get_cookie_params();
+            $params = [
+                'lifetime' => $effectiveLifetime,
+                'path' => $cookieParams['path'],
+                'domain' => $cookieParams['domain'],
+                'secure' => $cookieSecure ? true : $cookieParams['secure'],
+                'httponly' => $cookieHttpOnly ? true : $cookieParams['httponly'],
+            ];
+            if ($cookieSameSite) {
+                $params['samesite'] = $cookieSameSite;
+            }
+            session_set_cookie_params($params);
         }
         
-        // 新增安全配置
-        if (!empty($config['cookie_samesite'])) {
-            ini_set('session.cookie_samesite', $config['cookie_samesite']);
-        }
-        
-        if (!empty($config['use_strict_mode'])) {
+        if (!empty($this->sessionConfig['use_strict_mode'])) {
             ini_set('session.use_strict_mode', 1);
         }
         
-        if (!empty($config['sid_length'])) {
-            ini_set('session.sid_length', $config['sid_length']);
+        if (!empty($this->sessionConfig['sid_length'])) {
+            ini_set('session.sid_length', (string)$this->sessionConfig['sid_length']);
         }
         
-        if (!empty($config['sid_bits_per_character'])) {
-            ini_set('session.sid_bits_per_character', $config['sid_bits_per_character']);
+        if (!empty($this->sessionConfig['sid_bits_per_character'])) {
+            ini_set('session.sid_bits_per_character', (string)$this->sessionConfig['sid_bits_per_character']);
         }
 
         session_start();
@@ -155,7 +178,10 @@ class Session
 
         // 检查是否超时（可选）
         $accessTime = $this->get('access_time', 0);
-        $timeout = 7200; // 2小时
+        $timeout = (int)($this->sessionConfig['access_timeout'] ?? $this->sessionConfig['lifetime'] ?? 43200);
+        if ($timeout <= 0) {
+            $timeout = 43200;
+        }
         
         if (time() - $accessTime > $timeout) {
             $this->delete('access_verified');
@@ -322,4 +348,3 @@ class Session
         return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
     }
 }
-

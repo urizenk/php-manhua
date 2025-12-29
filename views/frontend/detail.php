@@ -200,38 +200,60 @@ $customCss = '
         overflow: hidden;
         margin: 12px 0;
     }
-    /* 统一行样式 */
-    .resource-row {
+    .resource-links {
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .resource-link-btn {
         display: flex;
         align-items: center;
-        padding: 14px 16px;
-        font-size: 0.88rem;
-        color: #0066CC;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        background: #ffffff;
+        border: 1px solid #FFE8D0;
+        border-radius: 10px;
         text-decoration: none;
-        border-bottom: 1px solid #FFE8D0;
-        transition: background 0.2s ease;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
-    .resource-row:last-child {
-        border-bottom: none;
-    }
-    a.resource-row:hover {
+    .resource-link-btn:hover {
         background: #FFF5EB;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.06);
     }
-    .resource-row i {
+    .resource-link-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #2D2D2D;
         flex-shrink: 0;
-        width: 20px;
-        margin-right: 10px;
-        font-size: 1rem;
-        color: #FF8C42;
-        text-align: center;
+        max-width: 45%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
-    .resource-row .row-text {
+    .resource-link-url {
+        font-size: 0.78rem;
+        color: #0066CC;
         flex: 1;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        color: #0066CC;
+        text-align: right;
+    }
+    .resource-notes {
+        border-top: 1px solid #FFE8D0;
+        padding: 12px 14px;
+        color: #666;
+        font-size: 0.86rem;
+        line-height: 1.6;
+        background: #FFFDF9;
+    }
+    .resource-notes .note-row {
+        margin: 6px 0;
+        word-break: break-all;
     }
     /* 章节列表 */
     .chapter-list {
@@ -396,49 +418,76 @@ include APP_PATH . '/views/layouts/header.php';
                 <?php endif; ?>
             <?php endif; ?>
 
-            <!-- 资源链接 -->
+            <!-- 资源链接（支持多链接模块） -->
             <?php if (!empty($manga['resource_link']) || !empty($manga['extract_code'])): ?>
-                <div class="section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
+                <?php
+                $resourceBlockTitle = '资源链接';
+                $resourceLinks = [];
+                $resourceNotes = [];
+
+                $raw = trim((string)($manga['resource_link'] ?? ''));
+                if ($raw !== '') {
+                    $decoded = json_decode($raw, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded['items']) && is_array($decoded['items'])) {
+                        $resourceBlockTitle = trim((string)($decoded['title'] ?? $resourceBlockTitle)) ?: $resourceBlockTitle;
+                        foreach ($decoded['items'] as $item) {
+                            if (!is_array($item)) {
+                                continue;
+                            }
+                            $url = trim((string)($item['url'] ?? ''));
+                            if ($url === '') {
+                                continue;
+                            }
+                            $label = trim((string)($item['label'] ?? ''));
+                            $resourceLinks[] = ['label' => $label, 'url' => $url];
+                        }
+                    } else {
+                        $lines = preg_split('/[\r\n]+/', $raw);
+                        foreach ($lines as $line) {
+                            $line = trim((string)$line);
+                            if ($line === '') {
+                                continue;
+                            }
+                            if (preg_match('/^https?:\/\//i', $line)) {
+                                $resourceLinks[] = ['label' => '', 'url' => $line];
+                            } else {
+                                $resourceNotes[] = $line;
+                            }
+                        }
+                    }
+                }
+                ?>
+
+                <div class="section-title"><?php echo htmlspecialchars($resourceBlockTitle); ?></div>
                 <div class="resource-card">
-                    <?php if (!empty($manga['resource_link'])): ?>
-                        <?php 
-                        // 分割多行链接
-                        $links = preg_split('/[\r\n]+/', trim($manga['resource_link']));
-                        foreach ($links as $link): 
-                            $link = trim($link);
-                            if (empty($link)) continue;
-                            // 检查是否是有效的URL
-                            $isUrl = preg_match('/^https?:\/\//i', $link);
-                        ?>
-                            <?php if ($isUrl): ?>
-                                <a href="<?php echo htmlspecialchars($link); ?>" target="_blank" class="resource-row" title="<?php echo htmlspecialchars($link); ?>">
-                                    <i class="bi bi-link-45deg"></i>
-                                    <span class="row-text">资源链接：<?php echo htmlspecialchars($link); ?></span>
+                    <?php if (!empty($resourceLinks)): ?>
+                        <div class="resource-links">
+                            <?php foreach ($resourceLinks as $i => $item): ?>
+                                <?php
+                                $url = $item['url'];
+                                $label = trim((string)($item['label'] ?? ''));
+                                if ($label === '') {
+                                    $host = parse_url($url, PHP_URL_HOST);
+                                    $label = $host ? $host : ('链接' . ($i + 1));
+                                }
+                                ?>
+                                <a href="<?php echo htmlspecialchars($url); ?>" target="_blank" class="resource-link-btn" title="<?php echo htmlspecialchars($url); ?>">
+                                    <span class="resource-link-title"><?php echo htmlspecialchars($label); ?></span>
+                                    <span class="resource-link-url"><?php echo htmlspecialchars($url); ?></span>
                                 </a>
-                            <?php else: ?>
-                                <div class="resource-row" style="cursor: default;">
-                                    <i class="bi bi-info-circle"></i>
-                                    <span class="row-text"><?php echo htmlspecialchars($link); ?></span>
-                                </div>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
-                    
-                    <?php if (!empty($manga['extract_code'])): 
-                        $extractCode = $manga['extract_code'];
-                        $isExtractUrl = preg_match('/^https?:\/\//i', $extractCode);
-                    ?>
-                        <?php if ($isExtractUrl): ?>
-                            <a href="<?php echo htmlspecialchars($extractCode); ?>" target="_blank" class="resource-row" title="<?php echo htmlspecialchars($extractCode); ?>">
-                                <i class="bi bi-key-fill"></i>
-                                <span class="row-text">提取码：<?php echo htmlspecialchars($extractCode); ?></span>
-                            </a>
-                        <?php else: ?>
-                            <div class="resource-row" style="cursor: default;">
-                                <i class="bi bi-key-fill"></i>
-                                <span class="row-text">提取码：<?php echo htmlspecialchars($extractCode); ?></span>
-                            </div>
-                        <?php endif; ?>
+
+                    <?php if (!empty($resourceNotes) || !empty($manga['extract_code'])): ?>
+                        <div class="resource-notes">
+                            <?php foreach ($resourceNotes as $note): ?>
+                                <div class="note-row"><?php echo htmlspecialchars($note); ?></div>
+                            <?php endforeach; ?>
+                            <?php if (!empty($manga['extract_code'])): ?>
+                                <div class="note-row"><strong>提取码：</strong><?php echo htmlspecialchars($manga['extract_code']); ?></div>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -469,7 +518,7 @@ include APP_PATH . '/views/layouts/header.php';
     <!-- 返回按钮 -->
     <div class="bottom-back">
         <a href="javascript:history.back()" class="bottom-back-btn">
-            <i class="bi bi-arrow-left"></i> 返回上一页
+            返回上一页
         </a>
     </div>
 </div>

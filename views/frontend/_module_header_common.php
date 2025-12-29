@@ -31,13 +31,12 @@ $keyword = $headerConfig['keyword'] ?? '';
     
     <!-- Tip提示框 -->
     <div class="tip-box">
-        <i class="bi bi-info-circle"></i>
         <?php echo htmlspecialchars($tip); ?>
     </div>
     
     <!-- 返回按钮 -->
     <a href="/" class="back-btn-top">
-        <i class="bi bi-arrow-left"></i> 回到目录
+        回到目录
     </a>
     
     <?php if ($showSearch): ?>

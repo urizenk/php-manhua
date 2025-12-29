@@ -18,7 +18,7 @@ return [
     // Session配置
     'session' => [
         'name'                    => 'MANHUA_SESSION',  // Session名称
-        'lifetime'                => 7200,              // Session生命周期（秒）
+        'lifetime'                => 43200,             // Session生命周期（秒）
         'cookie_httponly'         => true,              // 仅HTTP访问（防XSS）
         'cookie_secure'           => false,             // HTTPS传输（生产环境必须true）
         'cookie_samesite'         => 'Strict',          // 防CSRF攻击（Strict/Lax/None）

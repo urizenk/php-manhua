@@ -307,7 +307,7 @@ include APP_PATH . '/views/layouts/header.php';
     <!-- 返回按钮 -->
     <div class="text-center mt-5">
         <a href="/" class="back-btn">
-            <i class="bi bi-arrow-left"></i> 返回首页
+            返回首页
         </a>
     </div>
 </div>

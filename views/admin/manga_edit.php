@@ -26,6 +26,39 @@ if (!$manga) {
     exit;
 }
 
+// 解析资源链接（支持 JSON 或多行文本）
+$resourceLinksTitle = '资源链接';
+$resourceLinksItems = [];
+$rawResourceLink = trim((string)($manga['resource_link'] ?? ''));
+if ($rawResourceLink !== '') {
+    $decoded = json_decode($rawResourceLink, true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded['items']) && is_array($decoded['items'])) {
+        $resourceLinksTitle = trim((string)($decoded['title'] ?? $resourceLinksTitle)) ?: $resourceLinksTitle;
+        foreach ($decoded['items'] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $url = trim((string)($item['url'] ?? ''));
+            if ($url === '') {
+                continue;
+            }
+            $resourceLinksItems[] = [
+                'label' => trim((string)($item['label'] ?? '')),
+                'url'   => $url,
+            ];
+        }
+    } else {
+        $lines = preg_split('/[\r\n]+/', $rawResourceLink);
+        foreach ($lines as $line) {
+            $line = trim((string)$line);
+            if ($line === '') {
+                continue;
+            }
+            $resourceLinksItems[] = ['label' => '', 'url' => $line];
+        }
+    }
+}
+
 // 处理表单提交
 $message = '';
 $messageType = '';
@@ -40,7 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
         $tagId = $_POST['tag_id'] ?? null;
         $title = trim($_POST['title'] ?? '');
         $status = $_POST['status'] ?? null;
-        $resourceLink = trim($_POST['resource_link'] ?? '');
+        $resourceLinkTitle  = trim($_POST['resource_links_title'] ?? '资源链接');
+        $resourceLinkLabels = $_POST['resource_links_label'] ?? [];
+        $resourceLinkUrls   = $_POST['resource_links_url'] ?? [];
+        $resourceLink       = '';
         $extractCode = trim($_POST['extract_code'] ?? '');
         $mangaTags = trim($_POST['manga_tags'] ?? '');
         $description = trim($_POST['description'] ?? '');
@@ -73,6 +109,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
     }
     
     if (empty($errors)) {
+        $resourceItems = [];
+        if (is_array($resourceLinkUrls)) {
+            foreach ($resourceLinkUrls as $i => $url) {
+                $url = trim((string)$url);
+                if ($url === '') {
+                    continue;
+                }
+                $label = '';
+                if (is_array($resourceLinkLabels) && array_key_exists($i, $resourceLinkLabels)) {
+                    $label = trim((string)$resourceLinkLabels[$i]);
+                }
+                $resourceItems[] = [
+                    'label' => $label,
+                    'url'   => $url,
+                ];
+            }
+        }
+        if (!empty($resourceItems)) {
+            $resourceLink = json_encode([
+                'title' => $resourceLinkTitle !== '' ? $resourceLinkTitle : '资源链接',
+                'items' => $resourceItems,
+            ], JSON_UNESCAPED_UNICODE);
+        }
+
         $updateData = [
             'type_id' => $typeId,
             'title' => $title,
@@ -282,9 +342,45 @@ include APP_PATH . '/views/admin/layout_header.php';
                 <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源信息</div>
                 
                 <div class="mb-3">
-                    <label class="form-label">资源链接</label>
-                    <textarea class="form-control" name="resource_link" rows="4" placeholder="输入资源链接，多个链接请换行输入"><?php echo htmlspecialchars($manga['resource_link']); ?></textarea>
-                    <small class="text-muted">如百度网盘、阿里云盘等分享链接，多个链接请换行输入</small>
+                    <label class="form-label">链接模块标题（可修改）</label>
+                    <input type="text" class="form-control" name="resource_links_title"
+                           value="<?php echo htmlspecialchars($resourceLinksTitle); ?>"
+                           placeholder="例如：资源链接 / 下载链接 / 在线阅读">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">链接列表</label>
+                    <div id="resourceLinksList">
+                        <?php if (!empty($resourceLinksItems)): ?>
+                            <?php foreach ($resourceLinksItems as $item): ?>
+                                <div class="row g-2 mb-2 resource-link-item">
+                                    <div class="col-4">
+                                        <input type="text" class="form-control" name="resource_links_label[]"
+                                               value="<?php echo htmlspecialchars($item['label']); ?>"
+                                               placeholder="按钮文字（可选）">
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="text" class="form-control" name="resource_links_url[]"
+                                               value="<?php echo htmlspecialchars($item['url']); ?>"
+                                               placeholder="https://...">
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="row g-2 mb-2 resource-link-item">
+                                <div class="col-4">
+                                    <input type="text" class="form-control" name="resource_links_label[]" placeholder="按钮文字（可选）">
+                                </div>
+                                <div class="col-8">
+                                    <input type="text" class="form-control" name="resource_links_url[]" placeholder="https://...">
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="addResourceLinkRow">
+                        <i class="bi bi-plus-circle"></i> 添加链接
+                    </button>
+                    <small class="text-muted d-block mt-2">每个链接会在详情页中单独展示为一个按钮</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">提取码</label>
@@ -348,6 +444,21 @@ $(document).ready(function() {
                 $("#tagSelect").html(options);
             });
         }
+    });
+
+    // 添加资源链接行
+    $("#addResourceLinkRow").on("click", function() {
+        var row = `
+            <div class="row g-2 mb-2 resource-link-item">
+                <div class="col-4">
+                    <input type="text" class="form-control" name="resource_links_label[]" placeholder="按钮文字（可选）">
+                </div>
+                <div class="col-8">
+                    <input type="text" class="form-control" name="resource_links_url[]" placeholder="https://...">
+                </div>
+            </div>
+        `;
+        $("#resourceLinksList").append(row);
     });
 });
 </script>

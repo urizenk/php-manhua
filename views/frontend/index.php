@@ -144,7 +144,7 @@ $customCss = '
         margin: 3px 0;
     }
     
-    /* 访问码弹窗 */
+    /* 访问码弹窗（统一样式） */
     .access-modal {
         display: none;
         position: fixed;
@@ -157,144 +157,153 @@ $customCss = '
         justify-content: center;
         align-items: center;
         padding: 15px;
+        font-family: "Poppins", Arial, sans-serif;
     }
     .access-modal.show {
         display: flex;
     }
     .access-modal-content {
-        background: white;
+        --primary-1: #87CEEB;
+        --primary-2: #63B8FF;
+        --primary-3: #4AA6FF;
+
+        background: #ffffff;
+        padding: 2.5rem;
         border-radius: 15px;
-        width: 100%;
-        max-width: 350px;
-        overflow: hidden;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 350px;
+        max-width: calc(100vw - 30px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        -webkit-transition: transform 0.3s ease, box-shadow 0.3s ease;
+        -moz-transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        background-color: #FFFFF0;
         max-height: 90vh;
         overflow-y: auto;
     }
-    .access-modal-header {
-        background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
-        color: white;
-        padding: 15px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-weight: bold;
-        position: sticky;
-        top: 0;
+    .access-modal-content:hover {
+        transform: translateY(-5px);
+        -webkit-transform: translateY(-5px);
+        -moz-transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
     }
-    .modal-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        line-height: 1;
-        padding: 5px;
-    }
-    .access-modal-body {
-        padding: 25px 20px;
+    .access-modal-title {
+        margin: 0 0 1.5rem;
+        color: #333333;
+        font-size: 2rem;
+        font-weight: 600;
     }
     .access-code-input {
         width: 100%;
-        padding: 14px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 1.1rem;
-        text-align: center;
-        margin-bottom: 15px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border: 1px solid #cccccc;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+        -webkit-transition: border-color 0.3s ease;
+        -moz-transition: border-color 0.3s ease;
         box-sizing: border-box;
-        -webkit-appearance: none;
     }
     .access-code-input:focus {
+        border-color: #007bff;
         outline: none;
-        border-color: #FF6B35;
     }
     .btn-access-submit {
-        width: auto;
-        min-width: 120px;
-        padding: 10px 25px;
-        background: linear-gradient(135deg, #FF9966 0%, #FF6B35 100%);
-        color: white;
+        width: 70%;
+        padding: 0.75rem;
+        background: #0096FF;
+        background: -webkit-linear-gradient(135deg, var(--primary-1), var(--primary-2));
+        background: -moz-linear-gradient(135deg, var(--primary-1), var(--primary-2));
+        color: #ffffff;
         border: none;
         border-radius: 25px;
-        font-size: 0.9rem;
-        font-weight: bold;
+        font-size: 1rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        -webkit-tap-highlight-color: transparent;
+        transition: background 0.3s ease, transform 0.2s ease;
+        -webkit-transition: background 0.3s ease, transform 0.2s ease;
+        -moz-transition: background 0.3s ease, transform 0.2s ease;
         margin: 0 auto;
         display: block;
     }
-    .btn-access-submit:hover, .btn-access-submit:active {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(255,107,53,0.3);
+    .btn-access-submit:hover {
+        background: #0096FF;
+        background: -webkit-linear-gradient(135deg, var(--primary-2), var(--primary-3));
+        background: -moz-linear-gradient(135deg, var(--primary-2), var(--primary-3));
+        transform: scale(1.02);
+        -webkit-transform: scale(1.02);
+        -moz-transform: scale(1.02);
     }
-    .access-tips {
-        text-align: center;
-        margin-top: 20px;
-        color: #666;
-        font-size: 0.9rem;
-    }
-    .access-tips p {
-        margin: 8px 0;
-    }
-    .tutorial-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        color: #FF6B35;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 0.9rem;
-        margin-bottom: 12px;
-    }
-    .tutorial-link:hover {
-        text-decoration: underline;
-        color: #E65100;
-    }
-    .get-code-title {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #FFF3E0;
-        padding: 8px 16px;
-        border-radius: 20px;
-        border: 1px dashed #FFB74D;
-        color: #E65100;
-        font-size: 0.85rem;
-        font-weight: bold;
-        margin-bottom: 12px;
-    }
-    .get-code-links {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    .btn-get-code {
+    .modal-close {
+        position: absolute;
+        right: 14px;
+        top: 10px;
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.06);
+        color: #333;
+        font-size: 1.4rem;
+        cursor: pointer;
+        line-height: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 14px 20px;
-        background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
+    }
+    .modal-close:hover {
+        background: rgba(0,0,0,0.10);
+    }
+    .tutorial-link {
+        margin-top: 1rem;
+        font-size: 1.125rem;
+    }
+    .tutorial-link a {
+        color: #007bff;
         text-decoration: none;
-        font-weight: bold;
+        transition: color 0.3s ease;
+        -webkit-transition: color 0.3s ease;
+        -moz-transition: color 0.3s ease;
+        font-weight: 600;
+    }
+    .tutorial-link a:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    .access-code-label {
+        margin-top: 1rem;
         font-size: 1rem;
-        transition: all 0.3s ease;
+        font-weight: 600;
+        color: #333333;
     }
-    .btn-get-code:nth-child(2) {
-        background: linear-gradient(135deg, #673AB7 0%, #512DA8 100%);
+    .access-code-links {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
     }
-    .btn-get-code:nth-child(3) {
-        background: linear-gradient(135deg, #3F51B5 0%, #303F9F 100%);
+    .access-code-links a {
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        background: -webkit-linear-gradient(135deg, var(--primary-1), var(--primary-2));
+        background: -moz-linear-gradient(135deg, var(--primary-1), var(--primary-2));
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: background 0.3s ease, transform 0.2s ease;
+        -webkit-transition: background 0.3s ease, transform 0.2s ease;
+        -moz-transition: background 0.3s ease, transform 0.2s ease;
     }
-    .btn-get-code:hover, .btn-get-code:active {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        color: white;
+    .access-code-links a:hover {
+        background: -webkit-linear-gradient(135deg, var(--primary-2), var(--primary-3));
+        background: -moz-linear-gradient(135deg, var(--primary-2), var(--primary-3));
+        transform: scale(1.02);
+        -webkit-transform: scale(1.02);
+        -moz-transform: scale(1.02);
     }
     
     /* 响应式调整 */
@@ -626,52 +635,35 @@ include APP_PATH . '/views/layouts/header.php';
 <!-- 访问码验证弹窗 -->
 <div class="access-modal" id="accessModal">
     <div class="access-modal-content">
-        <div class="access-modal-header">
-            <span>请输入访问码</span>
-            <button type="button" class="modal-close" id="modalClose">&times;</button>
-        </div>
-        <div class="access-modal-body">
-            <input type="text"
-                   class="access-code-input"
-                   id="accessCode"
-                   placeholder="输入密码，不会就看下方取码教程"
-                   autocomplete="off"
-                   inputmode="text">
-            <button type="button" class="btn-access-submit" id="verifyBtn">提交</button>
-            
-            <?php if ($accessCodeTutorial || !empty($accessCodeUrls)): ?>
-            <div class="access-tips">
-                <?php if ($accessCodeTutorial): ?>
-                    <?php 
-                    // 检查教程是否为链接
-                    $tutorialIsUrl = preg_match('/^https?:\/\//i', trim($accessCodeTutorial));
-                    ?>
-                    <?php if ($tutorialIsUrl): ?>
-                        <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank" class="tutorial-link">
-                            🎉取码教程
-                        </a>
-                    <?php else: ?>
-                        <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank" class="tutorial-link">
-                            🎉取码教程
+        <button type="button" class="modal-close" id="modalClose">&times;</button>
+        <h2 class="access-modal-title">访问验证</h2>
+
+        <input type="text"
+               class="access-code-input"
+               id="accessCode"
+               placeholder="请输入访问码"
+               autocomplete="off"
+               inputmode="text">
+        <button type="button" class="btn-access-submit" id="verifyBtn">提交</button>
+
+        <?php if ($accessCodeTutorial): ?>
+            <div class="tutorial-link">
+                <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank">获取每日访问码</a>
+            </div>
+            <div class="access-code-label">提示：取到访问码后再回来输入即可</div>
+        <?php endif; ?>
+
+        <?php if (!empty($accessCodeUrls)): ?>
+            <div class="access-code-links">
+                <?php foreach ($accessCodeUrls as $urlItem): ?>
+                    <?php if (!empty($urlItem['url'])): ?>
+                        <a href="<?php echo htmlspecialchars($urlItem['url']); ?>" target="_blank">
+                            <?php echo htmlspecialchars($urlItem['name'] ?: '获取访问码'); ?>
                         </a>
                     <?php endif; ?>
-                <?php endif; ?>
-                
-                <?php if (!empty($accessCodeUrls)): ?>
-                    <div class="get-code-title">获取每日访问码👇</div>
-                    <div class="get-code-links">
-                        <?php foreach ($accessCodeUrls as $urlItem): ?>
-                            <?php if (!empty($urlItem['url'])): ?>
-                                <a href="<?php echo htmlspecialchars($urlItem['url']); ?>" target="_blank" class="btn-get-code">
-                                    <?php echo htmlspecialchars($urlItem['name'] ?: '获取访问码'); ?>
-                                </a>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
+                <?php endforeach; ?>
             </div>
-            <?php endif; ?>
-        </div>
+        <?php endif; ?>
     </div>
 </div>
 

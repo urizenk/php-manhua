@@ -29,7 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
         $tagId        = isset($_POST['tag_id']) && $_POST['tag_id'] !== '' ? (int)$_POST['tag_id'] : null;
         $title        = trim($_POST['title'] ?? '');
         $status       = $_POST['status'] ?? '';
-        $resourceLink = trim($_POST['resource_link'] ?? '');
+        $resourceLinkTitle  = trim($_POST['resource_links_title'] ?? '资源链接');
+        $resourceLinkLabels = $_POST['resource_links_label'] ?? [];
+        $resourceLinkUrls   = $_POST['resource_links_url'] ?? [];
+        $resourceLink       = '';
         $extractCode  = trim($_POST['extract_code'] ?? '');
         $mangaTags    = trim($_POST['manga_tags'] ?? '');
         $description  = trim($_POST['description'] ?? '');
@@ -57,6 +60,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
         }
 
         if (empty($errors)) {
+            $resourceItems = [];
+            if (is_array($resourceLinkUrls)) {
+                foreach ($resourceLinkUrls as $i => $url) {
+                    $url = trim((string)$url);
+                    if ($url === '') {
+                        continue;
+                    }
+                    $label = '';
+                    if (is_array($resourceLinkLabels) && array_key_exists($i, $resourceLinkLabels)) {
+                        $label = trim((string)$resourceLinkLabels[$i]);
+                    }
+                    $resourceItems[] = [
+                        'label' => $label,
+                        'url'   => $url,
+                    ];
+                }
+            }
+            if (!empty($resourceItems)) {
+                $resourceLink = json_encode([
+                    'title' => $resourceLinkTitle !== '' ? $resourceLinkTitle : '资源链接',
+                    'items' => $resourceItems,
+                ], JSON_UNESCAPED_UNICODE);
+            }
+
             $insertData = [
                 'type_id'       => $typeId,
                 'title'         => $title,
@@ -246,15 +273,33 @@ include APP_PATH . '/views/admin/layout_header.php';
                 <div id="imagePreview"></div>
             </div>
 
-            <!-- 资源链接 -->
+            <!-- 资源链接（支持多链接） -->
             <div class="form-section">
                 <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
 
                 <div class="mb-3">
-                    <label class="form-label">资源链接</label>
-                    <textarea class="form-control" name="resource_link" rows="4" placeholder="输入资源链接&#10;多个链接请换行输入&#10;&#10;例如：&#10;https://pan.baidu.com/xxx&#10;https://www.aliyundrive.com/xxx"></textarea>
-                    <small class="text-muted">如百度网盘、阿里云盘等分享链接，多个链接请换行输入</small>
+                    <label class="form-label">链接模块标题（可修改）</label>
+                    <input type="text" class="form-control" name="resource_links_title" value="资源链接" placeholder="例如：资源链接 / 下载链接 / 在线阅读">
                 </div>
+
+                <div class="mb-3">
+                    <label class="form-label">链接列表</label>
+                    <div id="resourceLinksList">
+                        <div class="row g-2 mb-2 resource-link-item">
+                            <div class="col-4">
+                                <input type="text" class="form-control" name="resource_links_label[]" placeholder="按钮文字（可选）">
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-control" name="resource_links_url[]" placeholder="https://...">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="addResourceLinkRow">
+                        <i class="bi bi-plus-circle"></i> 添加链接
+                    </button>
+                    <small class="text-muted d-block mt-2">每个链接会在详情页中单独展示为一个按钮</small>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">提取码</label>
                     <input type="text" class="form-control" name="extract_code" placeholder="如：1234（多个提取码用空格或逗号分隔）">
@@ -362,6 +407,21 @@ $(document).ready(function() {
                 }
             });
         }
+    });
+
+    // 添加资源链接行
+    $("#addResourceLinkRow").on("click", function() {
+        var row = `
+            <div class="row g-2 mb-2 resource-link-item">
+                <div class="col-4">
+                    <input type="text" class="form-control" name="resource_links_label[]" placeholder="按钮文字（可选）">
+                </div>
+                <div class="col-8">
+                    <input type="text" class="form-control" name="resource_links_url[]" placeholder="https://...">
+                </div>
+            </div>
+        `;
+        $("#resourceLinksList").append(row);
     });
 });
 </script>

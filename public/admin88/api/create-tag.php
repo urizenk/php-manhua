@@ -52,11 +52,18 @@ try {
         exit;
     }
     
+    // 获取当前最小的sort_order，新标签排在最前面
+    $minSort = $db->queryOne(
+        "SELECT MIN(sort_order) as min_sort FROM tags WHERE type_id = ?",
+        [$typeId]
+    );
+    $newSortOrder = ((int)($minSort['min_sort'] ?? 0)) - 1;
+
     $tagId = $db->insert('tags', [
-        'type_id' => $typeId,
-        'tag_name' => $tagName,
-        'tag_type' => 'category',
-        'sort_order' => 0
+        'type_id'     => $typeId,
+        'tag_name'    => $tagName,
+        'tag_type'    => 'category',
+        'sort_order'  => $newSortOrder,
     ]);
     
     if ($tagId) {

@@ -44,7 +44,7 @@ try {
         exit;
     }
     
-    $id = $_POST['id'] ?? 0;
+    $id = (int)($_POST['id'] ?? 0);
     
     if (!$id) {
         echo json_encode(['success' => false, 'message' => '参数错误']);
@@ -56,8 +56,8 @@ try {
     
     // 删除漫画
     $result = $db->delete('mangas', 'id = ?', [$id]);
-    
-    if ($result) {
+
+    if ($result !== false) {
         // 删除封面图片文件
         if ($manga && $manga['cover_image']) {
             $imagePath = APP_PATH . $manga['cover_image'];
@@ -65,8 +65,9 @@ try {
                 @unlink($imagePath);
             }
         }
-        
-        echo json_encode(['success' => true]);
+
+        // $result === 0 表示未找到（已删除/不存在）
+        echo json_encode(['success' => true, 'deleted' => (int)$result]);
     } else {
         echo json_encode(['success' => false, 'message' => '删除失败']);
     }

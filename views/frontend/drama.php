@@ -242,12 +242,18 @@ include APP_PATH . '/views/layouts/header.php';
         
         <!-- Tip提示框 -->
         <div class="tip-box">
-            Tip：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新增漫画！
+            <?php
+            $tipText = trim($moduleType['tip_text'] ?? '');
+            if ($tipText === '') {
+                $tipText = 'Tip：单部漫的密码就是每日访问码，一码通用！刷新后才能看到新增漫画！';
+            }
+            echo htmlspecialchars($tipText);
+            ?>
         </div>
         
         <!-- 返回按钮 -->
         <a href="/" class="back-btn">
-            <i class="bi bi-arrow-left"></i> 回到目录
+            回到目录
         </a>
         
         <!-- 搜索框 -->
@@ -289,7 +295,7 @@ foreach ($groupedMangas as $tagId => $group): ?>
     <!-- 返回按钮 -->
     <div class="bottom-back">
         <a href="/" class="bottom-back-btn">
-            <i class="bi bi-arrow-left"></i> 返回首页
+            返回首页
         </a>
     </div>
 </div>

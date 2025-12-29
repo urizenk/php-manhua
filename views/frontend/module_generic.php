@@ -258,7 +258,7 @@ include APP_PATH . '/views/layouts/header.php';
         
         <!-- 返回按钮 -->
         <a href="/" class="back-btn">
-            <i class="bi bi-arrow-left"></i> 回到目录
+            回到目录
         </a>
         
         <!-- 搜索框 -->
@@ -300,7 +300,7 @@ foreach ($groupedMangas as $tagId => $group): ?>
     <!-- 返回按钮 -->
     <div class="bottom-back">
         <a href="/" class="bottom-back-btn">
-            <i class="bi bi-arrow-left"></i> 返回首页
+            返回首页
         </a>
     </div>
 </div>
