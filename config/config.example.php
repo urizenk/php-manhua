@@ -27,8 +27,9 @@ return [
         'sid_bits_per_character'  => 6,                 // 每字符位数（增加熵）
 
         // 访问码验证（方案B：签名Cookie，避免Session丢失导致重复输入）
-        // 生产环境务必修改为强随机密钥（长度建议 >= 32）
-        'access_cookie_secret'    => 'CHANGE_ME_TO_A_RANDOM_SECRET',
+        // 安全建议：不要把密钥写进代码仓库，优先通过环境变量提供：
+        // MANHUA_ACCESS_COOKIE_SECRET=一段长度>=32的强随机字符串
+        'access_cookie_secret'    => '',
         'access_cookie_name'      => 'MANHUA_ACCESS',
         'access_cookie_ttl'       => 43200,             // 12小时（秒）
     ],

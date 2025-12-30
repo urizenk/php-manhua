@@ -258,23 +258,55 @@ class Session
     {
         $name = $this->sessionConfig['access_cookie_name'] ?? 'MANHUA_ACCESS';
         $name = preg_replace('/[^A-Za-z0-9_\\-]/', '', (string)$name);
-        return $name ?: 'MANHUA_ACCESS';
+        $name = $name ?: 'MANHUA_ACCESS';
+
+        // 如果是 HTTPS，优先使用 __Host- 前缀（更安全：必须 Path=/ 且不能设置 Domain）
+        $secure = !empty($this->sessionConfig['cookie_secure']);
+        if ($secure && strpos($name, '__Host-') !== 0) {
+            $name = '__Host-' . $name;
+        }
+
+        return $name;
     }
 
     private function getAccessCookieSecret()
     {
-        $secret = (string)($this->sessionConfig['access_cookie_secret'] ?? '');
-        if ($secret !== '') {
-            return $secret;
-        }
+        // 优先使用环境变量，避免把密钥写进代码仓库
         $env = getenv('MANHUA_ACCESS_COOKIE_SECRET');
-        return is_string($env) ? $env : '';
+        if (is_string($env)) {
+            $env = trim($env);
+            if ($this->isValidAccessCookieSecret($env)) {
+                return $env;
+            }
+        }
+
+        $secret = (string)($this->sessionConfig['access_cookie_secret'] ?? '');
+        $secret = trim($secret);
+        return $this->isValidAccessCookieSecret($secret) ? $secret : '';
     }
 
     private function getAccessCookieTtl()
     {
         $ttl = (int)($this->sessionConfig['access_cookie_ttl'] ?? 43200);
         return $ttl > 0 ? $ttl : 43200;
+    }
+
+    private function isValidAccessCookieSecret($secret)
+    {
+        if (!is_string($secret)) {
+            return false;
+        }
+        $secret = trim($secret);
+        if ($secret === '') {
+            return false;
+        }
+        // 防止使用示例占位符
+        $upper = strtoupper($secret);
+        if (strpos($upper, 'CHANGE_ME') !== false) {
+            return false;
+        }
+        // 至少 32 字符（建议 32+，避免弱密钥）
+        return strlen($secret) >= 32;
     }
 
     private function base64UrlEncode($data)
@@ -406,7 +438,19 @@ class Session
 
         $exp = (int)($payload['exp'] ?? 0);
         $iat = (int)($payload['iat'] ?? 0);
-        if ($exp <= 0 || $iat <= 0 || $exp < time()) {
+        $now = time();
+        if ($exp <= 0 || $iat <= 0 || $exp < $now) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        // 防止异常 token（例如 iat 在未来 / exp 过长）
+        if ($iat > ($now + 300)) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+        $ttl = $this->getAccessCookieTtl();
+        if (($exp - $iat) > ($ttl + 60)) {
             $this->clearAccessPassCookie();
             return false;
         }
