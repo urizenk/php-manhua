@@ -25,6 +25,12 @@ return [
         'use_strict_mode'         => true,              // 严格模式（防会话固定）
         'sid_length'              => 48,                // Session ID长度（增加安全性）
         'sid_bits_per_character'  => 6,                 // 每字符位数（增加熵）
+
+        // 访问码验证（方案B：签名Cookie，避免Session丢失导致重复输入）
+        // 生产环境务必修改为强随机密钥（长度建议 >= 32）
+        'access_cookie_secret'    => 'CHANGE_ME_TO_A_RANDOM_SECRET',
+        'access_cookie_name'      => 'MANHUA_ACCESS',
+        'access_cookie_ttl'       => 43200,             // 12小时（秒）
     ],
     
     // 文件上传配置

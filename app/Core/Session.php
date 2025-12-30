@@ -12,6 +12,8 @@ class Session
     private $db = null;
     private $sessionConfig = [];
 
+    private const ACCESS_COOKIE_VERSION = 1;
+
     public function __construct($config = [])
     {
         $this->start($config);
@@ -152,6 +154,9 @@ class Session
             $this->set('access_time', time());
             // 记录当前通过验证的访问码，用于后续校验是否已被修改
             $this->set('access_code_value', $correctCode);
+
+            // 写入签名Cookie，避免Session丢失导致重复输入
+            $this->setAccessPassCookie($correctCode);
         }
 
         return $isValid;
@@ -163,7 +168,7 @@ class Session
     public function isAccessVerified()
     {
         if (!$this->has('access_verified')) {
-            return false;
+            return $this->restoreAccessFromCookie();
         }
 
         // 如果访问码已经被修改，则要求重新验证
@@ -173,7 +178,8 @@ class Session
             $this->delete('access_verified');
             $this->delete('access_time');
             $this->delete('access_code_value');
-            return false;
+            $this->clearAccessPassCookie();
+            return $this->restoreAccessFromCookie();
         }
 
         // 检查是否超时（可选）
@@ -186,7 +192,8 @@ class Session
         if (time() - $accessTime > $timeout) {
             $this->delete('access_verified');
             $this->delete('access_time');
-            return false;
+            $this->clearAccessPassCookie();
+            return $this->restoreAccessFromCookie();
         }
 
         return true;
@@ -235,7 +242,187 @@ class Session
             ['access_code']
         );
 
-        return $affected > 0;
+        if ($affected > 0) {
+            // 当前用户的访问验证应失效
+            $this->delete('access_verified');
+            $this->delete('access_time');
+            $this->delete('access_code_value');
+            $this->clearAccessPassCookie();
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getAccessCookieName()
+    {
+        $name = $this->sessionConfig['access_cookie_name'] ?? 'MANHUA_ACCESS';
+        $name = preg_replace('/[^A-Za-z0-9_\\-]/', '', (string)$name);
+        return $name ?: 'MANHUA_ACCESS';
+    }
+
+    private function getAccessCookieSecret()
+    {
+        $secret = (string)($this->sessionConfig['access_cookie_secret'] ?? '');
+        if ($secret !== '') {
+            return $secret;
+        }
+        $env = getenv('MANHUA_ACCESS_COOKIE_SECRET');
+        return is_string($env) ? $env : '';
+    }
+
+    private function getAccessCookieTtl()
+    {
+        $ttl = (int)($this->sessionConfig['access_cookie_ttl'] ?? 43200);
+        return $ttl > 0 ? $ttl : 43200;
+    }
+
+    private function base64UrlEncode($data)
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    private function base64UrlDecode($data)
+    {
+        $data = strtr($data, '-_', '+/');
+        $pad = strlen($data) % 4;
+        if ($pad) {
+            $data .= str_repeat('=', 4 - $pad);
+        }
+        return base64_decode($data, true);
+    }
+
+    private function computeAccessCodeFingerprint($accessCode, $secret)
+    {
+        return hash_hmac('sha256', (string)$accessCode, (string)$secret);
+    }
+
+    private function setAccessPassCookie($accessCode)
+    {
+        $secret = $this->getAccessCookieSecret();
+        if ($secret === '' || headers_sent()) {
+            return false;
+        }
+
+        $ttl = $this->getAccessCookieTtl();
+        $now = time();
+        $exp = $now + $ttl;
+
+        $payload = json_encode([
+            'v' => self::ACCESS_COOKIE_VERSION,
+            'iat' => $now,
+            'exp' => $exp,
+            'cv' => $this->computeAccessCodeFingerprint($accessCode, $secret),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if ($payload === false) {
+            return false;
+        }
+
+        $payloadB64 = $this->base64UrlEncode($payload);
+        $sigRaw = hash_hmac('sha256', $payloadB64, $secret, true);
+        $sigB64 = $this->base64UrlEncode($sigRaw);
+
+        $token = $payloadB64 . '.' . $sigB64;
+
+        $sameSite = $this->sessionConfig['cookie_samesite'] ?? 'Lax';
+        $secure = !empty($this->sessionConfig['cookie_secure']);
+
+        return setcookie($this->getAccessCookieName(), $token, [
+            'expires' => $exp,
+            'path' => '/',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => $sameSite ?: 'Lax',
+        ]);
+    }
+
+    private function clearAccessPassCookie()
+    {
+        if (headers_sent()) {
+            return false;
+        }
+
+        $sameSite = $this->sessionConfig['cookie_samesite'] ?? 'Lax';
+        $secure = !empty($this->sessionConfig['cookie_secure']);
+
+        return setcookie($this->getAccessCookieName(), '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'secure' => $secure,
+            'httponly' => true,
+            'samesite' => $sameSite ?: 'Lax',
+        ]);
+    }
+
+    private function restoreAccessFromCookie()
+    {
+        $secret = $this->getAccessCookieSecret();
+        if ($secret === '') {
+            return false;
+        }
+
+        $cookieName = $this->getAccessCookieName();
+        $token = $_COOKIE[$cookieName] ?? '';
+        if (!is_string($token) || $token === '') {
+            return false;
+        }
+
+        $parts = explode('.', $token, 2);
+        if (count($parts) !== 2) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        list($payloadB64, $sigB64) = $parts;
+        $sigRaw = $this->base64UrlDecode($sigB64);
+        if ($sigRaw === false) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        $expectedSig = hash_hmac('sha256', $payloadB64, $secret, true);
+        if (!hash_equals($expectedSig, $sigRaw)) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        $payloadJson = $this->base64UrlDecode($payloadB64);
+        if ($payloadJson === false) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        $payload = json_decode($payloadJson, true);
+        if (!is_array($payload)) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        if (($payload['v'] ?? null) !== self::ACCESS_COOKIE_VERSION) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        $exp = (int)($payload['exp'] ?? 0);
+        $iat = (int)($payload['iat'] ?? 0);
+        if ($exp <= 0 || $iat <= 0 || $exp < time()) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        $currentCode = $this->getAccessCode();
+        $expectedCv = $this->computeAccessCodeFingerprint($currentCode, $secret);
+        if (!hash_equals((string)($payload['cv'] ?? ''), $expectedCv)) {
+            $this->clearAccessPassCookie();
+            return false;
+        }
+
+        $this->set('access_verified', true);
+        $this->set('access_time', $iat);
+        $this->set('access_code_value', $currentCode);
+
+        return true;
     }
 
     /**
