@@ -420,7 +420,7 @@ $(document).ready(function() {
     // 批量表单提交
     $("#batchForm").submit(function(e) {
         // 清理旧的隐藏字段，避免二次提交重复
-        $("#batchForm").find("input[name='manga_ids[]']").remove();
+        $("#batchForm").find("input[name=\'manga_ids[]\']").remove();
 
         var action = $("#batchAction").val();
         var checkedIds = [];
