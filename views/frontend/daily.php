@@ -23,9 +23,9 @@ $moduleName = $moduleType['type_name'];
 // 获取搜索关键词
 $keyword = $_GET['keyword'] ?? '';
 
-// 获取该板块下的所有标签（按排序）
+// 获取该板块下的所有标签（按标签名降序，日期大的在前）
 $tags = $db->query(
-    "SELECT * FROM tags WHERE type_id = ? ORDER BY sort_order, id",
+    "SELECT * FROM tags WHERE type_id = ? ORDER BY tag_name DESC, sort_order, id",
     [$moduleType['id']]
 );
 
