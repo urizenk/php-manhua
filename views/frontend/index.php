@@ -646,7 +646,7 @@ include APP_PATH . '/views/layouts/header.php';
 
         <?php if ($accessCodeTutorial): ?>
             <div class="tutorial-link">
-                <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank">🎉 获取每日访问码</a>
+                <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank">🎉 取码教程</a>
             </div>
             <div class="access-code-label">提示：取到访问码后再回来输入即可</div>
         <?php endif; ?>
