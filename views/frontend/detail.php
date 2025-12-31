@@ -418,77 +418,88 @@ include APP_PATH . '/views/layouts/header.php';
                 <?php endif; ?>
             <?php endif; ?>
 
-            <!-- 资源链接（支持多链接模块） -->
-            <?php if (!empty($manga['resource_link']) || !empty($manga['extract_code'])): ?>
-                <?php
-                $resourceBlockTitle = '资源链接';
-                $resourceLinks = [];
-                $resourceNotes = [];
-
-                $raw = trim((string)($manga['resource_link'] ?? ''));
-                if ($raw !== '') {
-                    $decoded = json_decode($raw, true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded['items']) && is_array($decoded['items'])) {
-                        $resourceBlockTitle = trim((string)($decoded['title'] ?? $resourceBlockTitle)) ?: $resourceBlockTitle;
+            <!-- 资源链接（支持多个独立模块） -->
+            <?php
+            $resourceGroups = [];
+            $raw = trim((string)($manga['resource_link'] ?? ''));
+            if ($raw !== '') {
+                $decoded = json_decode($raw, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    // 新格式：多组资源链接
+                    if (isset($decoded['groups']) && is_array($decoded['groups'])) {
+                        $resourceGroups = $decoded['groups'];
+                    }
+                    // 旧格式：单组资源链接（兼容）
+                    elseif (isset($decoded['items']) && is_array($decoded['items'])) {
+                        $title = trim((string)($decoded['title'] ?? '资源链接')) ?: '资源链接';
+                        $items = [];
                         foreach ($decoded['items'] as $item) {
-                            if (!is_array($item)) {
-                                continue;
-                            }
+                            if (!is_array($item)) continue;
                             $url = trim((string)($item['url'] ?? ''));
-                            if ($url === '') {
-                                continue;
-                            }
-                            $label = trim((string)($item['label'] ?? ''));
-                            $resourceLinks[] = ['label' => $label, 'url' => $url];
+                            if ($url === '') continue;
+                            $items[] = [
+                                'label' => trim((string)($item['label'] ?? '')),
+                                'url'   => $url,
+                            ];
                         }
-                    } else {
-                        $lines = preg_split('/[\r\n]+/', $raw);
-                        foreach ($lines as $line) {
-                            $line = trim((string)$line);
-                            if ($line === '') {
-                                continue;
-                            }
-                            if (preg_match('/^https?:\/\//i', $line)) {
-                                $resourceLinks[] = ['label' => '', 'url' => $line];
-                            } else {
-                                $resourceNotes[] = $line;
-                            }
+                        if (!empty($items)) {
+                            $resourceGroups[] = ['title' => $title, 'items' => $items];
                         }
                     }
+                } else {
+                    // 纯文本格式（旧格式兼容）
+                    $lines = preg_split('/[\r\n]+/', $raw);
+                    $items = [];
+                    foreach ($lines as $line) {
+                        $line = trim((string)$line);
+                        if ($line === '') continue;
+                        if (preg_match('/^https?:\/\//i', $line)) {
+                            $items[] = ['label' => '资源链接', 'url' => $line];
+                        }
+                    }
+                    if (!empty($items)) {
+                        $resourceGroups[] = ['title' => '资源链接', 'items' => $items];
+                    }
                 }
-                ?>
+            }
+            ?>
 
-                <div class="section-title"><?php echo htmlspecialchars($resourceBlockTitle); ?></div>
+            <?php foreach ($resourceGroups as $group): ?>
+                <?php if (!empty($group['items'])): ?>
+                <div class="section-title"><i class="bi bi-link-45deg"></i> <?php echo htmlspecialchars($group['title'] ?? '资源链接'); ?></div>
                 <div class="resource-card">
-                    <?php if (!empty($resourceLinks)): ?>
-                        <div class="resource-links">
-                            <?php foreach ($resourceLinks as $i => $item): ?>
-                                <?php
-                                $url = $item['url'];
-                                $label = trim((string)($item['label'] ?? ''));
-                                if ($label === '') {
-                                    $host = parse_url($url, PHP_URL_HOST);
-                                    $label = $host ? $host : ('链接' . ($i + 1));
-                                }
-                                ?>
-                                <a href="<?php echo htmlspecialchars($url); ?>" target="_blank" class="resource-link-btn" title="<?php echo htmlspecialchars($url); ?>">
-                                    <span class="resource-link-title"><?php echo htmlspecialchars($label); ?></span>
-                                    <span class="resource-link-url"><?php echo htmlspecialchars($url); ?></span>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
+                    <div class="resource-links">
+                        <?php foreach ($group['items'] as $i => $item): ?>
+                            <?php
+                            $url = $item['url'] ?? '';
+                            $label = trim((string)($item['label'] ?? ''));
+                            if ($label === '' || $label === '资源链接') {
+                                $host = parse_url($url, PHP_URL_HOST);
+                                $displayLabel = '资源链接';
+                                $displayUrl = $url;
+                            } elseif ($label === '提取码') {
+                                $displayLabel = '提取码';
+                                $displayUrl = $url;
+                            } else {
+                                $displayLabel = $label;
+                                $displayUrl = $url;
+                            }
+                            ?>
+                            <a href="<?php echo htmlspecialchars($url); ?>" target="_blank" class="resource-link-btn" title="<?php echo htmlspecialchars($url); ?>">
+                                <span class="resource-link-title"><?php echo htmlspecialchars($displayLabel); ?></span>
+                                <span class="resource-link-url"><?php echo htmlspecialchars($displayUrl); ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
 
-                    <?php if (!empty($resourceNotes) || !empty($manga['extract_code'])): ?>
-                        <div class="resource-notes">
-                            <?php foreach ($resourceNotes as $note): ?>
-                                <div class="note-row"><?php echo htmlspecialchars($note); ?></div>
-                            <?php endforeach; ?>
-                            <?php if (!empty($manga['extract_code'])): ?>
-                                <div class="note-row"><strong>提取码：</strong><?php echo htmlspecialchars($manga['extract_code']); ?></div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
+            <?php if (!empty($manga['extract_code'])): ?>
+                <div class="resource-card" style="margin-top: 10px;">
+                    <div class="resource-notes">
+                        <div class="note-row"><strong>提取码：</strong><?php echo htmlspecialchars($manga['extract_code']); ?></div>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>

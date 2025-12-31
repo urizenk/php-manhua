@@ -494,31 +494,31 @@ include APP_PATH . '/views/admin/layout_header.php';
             <!-- 桌面端表格视图 -->
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-bordered align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="60">ID</th>
-                                    <th class="table-icon-cell">图标</th>
-                                    <th>模块名称</th>
-                                    <th>类型代码</th>
-                                    <th>外部链接</th>
-                                    <th>提示文字</th>
-                                    <th>弹窗图片</th>
-                                    <th width="80">排序</th>
-                                    <th width="60">状态</th>
-                                    <th width="160">操作</th>
-                                </tr>
-                            </thead>
+                    <thead class="table-light">
+                        <tr>
+                            <th width="60">ID</th>
+                            <th class="table-icon-cell">图标</th>
+                            <th>模块名称</th>
+                            <th>类型代码</th>
+                            <th>外部链接</th>
+                            <th>提示文字</th>
+                            <th>弹窗图片</th>
+                            <th width="80">排序</th>
+                            <th width="60">状态</th>
+                            <th width="160">操作</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <?php foreach ($types as $type): ?>
                             <tr>
-                                <td><?php echo (int)$type['id']; ?></td>
-                                <td>
-                                    <form method="POST" class="module-form" data-id="<?php echo (int)$type['id']; ?>">
-                                        <?php echo $session->csrfField(); ?>
-                                        <input type="hidden" name="action" value="update">
-                                        <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
-                                        <input type="hidden" name="icon" class="icon-input" value="<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>">
-                                        
+                                <form method="POST" class="module-form" data-id="<?php echo (int)$type['id']; ?>">
+                                    <?php echo $session->csrfField(); ?>
+                                    <input type="hidden" name="action" value="update">
+                                    <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
+                                    <input type="hidden" name="icon" class="icon-input" value="<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>">
+                                    
+                                    <td><?php echo (int)$type['id']; ?></td>
+                                    <td>
                                         <div class="icon-wrapper">
                                             <div class="table-icon-preview icon-trigger" style="cursor: pointer;">
                                                 <i class="bi bi-<?php echo htmlspecialchars($type['icon'] ?? 'book'); ?>"></i>
@@ -535,16 +535,16 @@ include APP_PATH . '/views/admin/layout_header.php';
                                                 </div>
                                             </div>
                                         </div>
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <input type="text" name="type_name" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['type_name']); ?>">
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <input type="text" name="type_code" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['type_code']); ?>">
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <input type="url" name="external_url" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['external_url'] ?? ''); ?>"
                                                placeholder="留空则显示漫画列表">
@@ -553,13 +553,13 @@ include APP_PATH . '/views/admin/layout_header.php';
                                                 <i class="bi bi-box-arrow-up-right"></i> 测试
                                             </a>
                                         <?php endif; ?>
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <input type="text" name="tip_text" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['tip_text'] ?? ''); ?>"
                                                placeholder="页面提示文字">
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <input type="text" name="popup_image" class="form-control form-control-sm"
                                                value="<?php echo htmlspecialchars($type['popup_image'] ?? ''); ?>"
                                                placeholder="弹窗图片URL">
@@ -568,33 +568,33 @@ include APP_PATH . '/views/admin/layout_header.php';
                                                 <i class="bi bi-image"></i> 预览
                                             </a>
                                         <?php endif; ?>
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <input type="number" name="sort_order" class="form-control form-control-sm"
                                                value="<?php echo (int)$type['sort_order']; ?>">
-                                </td>
-                                <td class="text-center">
+                                    </td>
+                                    <td class="text-center">
                                         <div class="form-check d-flex justify-content-center">
                                             <input class="form-check-input" type="checkbox" name="need_status"
                                                    <?php echo $type['need_status'] ? 'checked' : ''; ?>>
                                         </div>
-                                </td>
-                                <td>
+                                    </td>
+                                    <td>
                                         <button type="submit" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-save"></i> 保存
                                         </button>
-                                    </form>
+                                </form>
 
-                                    <form method="POST" style="display:inline;"
-                                          onsubmit="return confirm('确定删除该模块？（仅在没有漫画使用该模块时可删除）');">
-                                        <?php echo $session->csrfField(); ?>
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger mt-1">
-                                            <i class="bi bi-trash"></i> 删除
-                                        </button>
-                                    </form>
-                                </td>
+                                <form method="POST" style="display:inline;"
+                                      onsubmit="return confirm('确定删除该模块？（仅在没有漫画使用该模块时可删除）');">
+                                    <?php echo $session->csrfField(); ?>
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?php echo (int)$type['id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger mt-1">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </button>
+                                </form>
+                                    </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

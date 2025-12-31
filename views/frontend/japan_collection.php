@@ -199,10 +199,6 @@ $customCss = '
     .manga-link:hover {
         text-decoration: underline;
     }
-    .manga-link::before {
-        content: "🔗";
-        font-size: 0.9rem;
-    }
     .empty-state {
         text-align: center;
         padding: 40px 20px;

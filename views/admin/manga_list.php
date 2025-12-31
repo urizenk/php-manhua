@@ -444,7 +444,7 @@ $(document).ready(function() {
         
         // 添加选中的ID到表单
         checkedIds.forEach(function(id) {
-            $(\"<input>\").attr({
+            $("<input>").attr({
                 type: "hidden",
                 name: "manga_ids[]",
                 value: id

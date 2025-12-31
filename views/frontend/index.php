@@ -144,7 +144,7 @@ $customCss = '
         margin: 3px 0;
     }
     
-    /* 访问码弹窗（统一样式） */
+    /* 访问码弹窗（完全按照用户提供的样式） */
     .access-modal {
         display: none;
         position: fixed;
@@ -163,10 +163,6 @@ $customCss = '
         display: flex;
     }
     .access-modal-content {
-        --primary-1: #87CEEB;
-        --primary-2: #63B8FF;
-        --primary-3: #4AA6FF;
-
         background: #ffffff;
         padding: 2.5rem;
         border-radius: 15px;
@@ -213,9 +209,9 @@ $customCss = '
     .btn-access-submit {
         width: 70%;
         padding: 0.75rem;
-        background: #0096FF;
-        background: -webkit-linear-gradient(135deg, var(--primary-1), var(--primary-2));
-        background: -moz-linear-gradient(135deg, var(--primary-1), var(--primary-2));
+        background: linear-gradient(135deg, #87CEEB, #63B8FF);
+        background: -webkit-linear-gradient(135deg, #87CEEB, #63B8FF);
+        background: -moz-linear-gradient(135deg, #87CEEB, #63B8FF);
         color: #ffffff;
         border: none;
         border-radius: 25px;
@@ -229,9 +225,9 @@ $customCss = '
         display: block;
     }
     .btn-access-submit:hover {
-        background: #0096FF;
-        background: -webkit-linear-gradient(135deg, var(--primary-2), var(--primary-3));
-        background: -moz-linear-gradient(135deg, var(--primary-2), var(--primary-3));
+        background: linear-gradient(135deg, #63B8FF, #4AA6FF);
+        background: -webkit-linear-gradient(135deg, #63B8FF, #4AA6FF);
+        background: -moz-linear-gradient(135deg, #63B8FF, #4AA6FF);
         transform: scale(1.02);
         -webkit-transform: scale(1.02);
         -moz-transform: scale(1.02);
@@ -273,10 +269,10 @@ $customCss = '
         text-decoration: underline;
     }
     .access-code-label {
-        margin-top: 1rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #333333;
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: #666666;
     }
     .access-code-links {
         margin-top: 1rem;
@@ -287,8 +283,9 @@ $customCss = '
     .access-code-links a {
         display: inline-block;
         padding: 0.75rem 1rem;
-        background: -webkit-linear-gradient(135deg, var(--primary-1), var(--primary-2));
-        background: -moz-linear-gradient(135deg, var(--primary-1), var(--primary-2));
+        background: linear-gradient(135deg, #DDA0DD, #BA55D3);
+        background: -webkit-linear-gradient(135deg, #DDA0DD, #BA55D3);
+        background: -moz-linear-gradient(135deg, #DDA0DD, #BA55D3);
         color: #ffffff;
         text-decoration: none;
         font-size: 1rem;
@@ -299,8 +296,9 @@ $customCss = '
         -moz-transition: background 0.3s ease, transform 0.2s ease;
     }
     .access-code-links a:hover {
-        background: -webkit-linear-gradient(135deg, var(--primary-2), var(--primary-3));
-        background: -moz-linear-gradient(135deg, var(--primary-2), var(--primary-3));
+        background: linear-gradient(135deg, #BA55D3, #9932CC);
+        background: -webkit-linear-gradient(135deg, #BA55D3, #9932CC);
+        background: -moz-linear-gradient(135deg, #BA55D3, #9932CC);
         transform: scale(1.02);
         -webkit-transform: scale(1.02);
         -moz-transform: scale(1.02);
@@ -648,7 +646,7 @@ include APP_PATH . '/views/layouts/header.php';
 
         <?php if ($accessCodeTutorial): ?>
             <div class="tutorial-link">
-                <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank">获取每日访问码</a>
+                <a href="<?php echo htmlspecialchars(trim($accessCodeTutorial)); ?>" target="_blank">🎉 获取每日访问码</a>
             </div>
             <div class="access-code-label">提示：取到访问码后再回来输入即可</div>
         <?php endif; ?>

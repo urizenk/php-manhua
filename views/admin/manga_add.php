@@ -29,10 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
         $tagId        = isset($_POST['tag_id']) && $_POST['tag_id'] !== '' ? (int)$_POST['tag_id'] : null;
         $title        = trim($_POST['title'] ?? '');
         $status       = $_POST['status'] ?? '';
-        $resourceLinkTitle  = trim($_POST['resource_links_title'] ?? '资源链接');
-        $resourceLinkLabels = $_POST['resource_links_label'] ?? [];
-        $resourceLinkUrls   = $_POST['resource_links_url'] ?? [];
-        $resourceLink       = '';
+        $resourceGroupTitles = $_POST['resource_group_title'] ?? [];
+        $resourceGroupLabels = $_POST['resource_group_label'] ?? [];
+        $resourceGroupUrls   = $_POST['resource_group_url'] ?? [];
+        $resourceLink        = '';
         $extractCode  = trim($_POST['extract_code'] ?? '');
         $mangaTags    = trim($_POST['manga_tags'] ?? '');
         $description  = trim($_POST['description'] ?? '');
@@ -60,28 +60,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_manga'])) {
         }
 
         if (empty($errors)) {
-            $resourceItems = [];
-            if (is_array($resourceLinkUrls)) {
-                foreach ($resourceLinkUrls as $i => $url) {
-                    $url = trim((string)$url);
-                    if ($url === '') {
-                        continue;
+            // 处理多组资源链接
+            $groups = [];
+            if (is_array($resourceGroupTitles)) {
+                foreach ($resourceGroupTitles as $groupIndex => $groupTitle) {
+                    $title = trim((string)$groupTitle) ?: '资源链接';
+                    $items = [];
+                    
+                    $labels = $resourceGroupLabels[$groupIndex] ?? [];
+                    $urls = $resourceGroupUrls[$groupIndex] ?? [];
+                    
+                    if (is_array($urls)) {
+                        foreach ($urls as $i => $url) {
+                            $url = trim((string)$url);
+                            if ($url === '') continue;
+                            $label = isset($labels[$i]) ? trim((string)$labels[$i]) : '';
+                            $items[] = ['label' => $label, 'url' => $url];
+                        }
                     }
-                    $label = '';
-                    if (is_array($resourceLinkLabels) && array_key_exists($i, $resourceLinkLabels)) {
-                        $label = trim((string)$resourceLinkLabels[$i]);
+                    
+                    if (!empty($items)) {
+                        $groups[] = ['title' => $title, 'items' => $items];
                     }
-                    $resourceItems[] = [
-                        'label' => $label,
-                        'url'   => $url,
-                    ];
                 }
             }
-            if (!empty($resourceItems)) {
-                $resourceLink = json_encode([
-                    'title' => $resourceLinkTitle !== '' ? $resourceLinkTitle : '资源链接',
-                    'items' => $resourceItems,
-                ], JSON_UNESCAPED_UNICODE);
+            if (!empty($groups)) {
+                $resourceLink = json_encode(['groups' => $groups], JSON_UNESCAPED_UNICODE);
             }
 
             $insertData = [
@@ -273,37 +277,59 @@ include APP_PATH . '/views/admin/layout_header.php';
                 <div id="imagePreview"></div>
             </div>
 
-            <!-- 资源链接（支持多链接） -->
+            <!-- 资源链接（支持多组链接） -->
             <div class="form-section">
-                <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源链接</div>
+                <div class="form-section-title"><i class="bi bi-link-45deg"></i> 资源信息</div>
 
-                <div class="mb-3">
-                    <label class="form-label">链接模块标题（可修改）</label>
-                    <input type="text" class="form-control" name="resource_links_title" value="资源链接" placeholder="例如：资源链接 / 下载链接 / 在线阅读">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">链接列表</label>
-                    <div id="resourceLinksList">
-                        <div class="row g-2 mb-2 resource-link-item">
-                            <div class="col-4">
-                                <input type="text" class="form-control" name="resource_links_label[]" placeholder="按钮文字（可选）">
+                <div id="resourceGroupsContainer">
+                    <div class="resource-group card mb-3" data-group-index="0">
+                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                            <input type="text" class="form-control form-control-sm w-auto" 
+                                   name="resource_group_title[0]"
+                                   value="资源链接"
+                                   placeholder="模块标题（如：资源链接）"
+                                   style="max-width: 200px;">
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-resource-group">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="resource-links-list">
+                                <div class="row g-2 mb-2 resource-link-item">
+                                    <div class="col-3">
+                                        <select class="form-select form-select-sm" name="resource_group_label[0][]">
+                                            <option value="资源链接" selected>资源链接</option>
+                                            <option value="提取码">提取码</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-8">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               name="resource_group_url[0][]"
+                                               placeholder="链接或提取码">
+                                    </div>
+                                    <div class="col-1">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-link-row">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-8">
-                                <input type="text" class="form-control" name="resource_links_url[]" placeholder="https://...">
-                            </div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm add-link-row">
+                                <i class="bi bi-plus"></i> 添加链接
+                            </button>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="addResourceLinkRow">
-                        <i class="bi bi-plus-circle"></i> 添加链接
-                    </button>
-                    <small class="text-muted d-block mt-2">每个链接会在详情页中单独展示为一个按钮</small>
                 </div>
+                
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addResourceGroup">
+                    <i class="bi bi-plus-circle"></i> 添加资源链接模块
+                </button>
+                <small class="text-muted d-block mt-2">每个模块可以有独立的标题，每个链接在详情页单独显示</small>
 
-                <div class="mb-3">
-                    <label class="form-label">提取码</label>
-                    <input type="text" class="form-control" name="extract_code" placeholder="如：1234（多个提取码用空格或逗号分隔）">
-                    <small class="text-muted">网盘提取码（可选）</small>
+                <div class="mb-3 mt-3">
+                    <label class="form-label">提取码（旧字段，可选）</label>
+                    <input type="text" class="form-control" name="extract_code" placeholder="如：1234（建议在上方链接模块中添加提取码）">
+                    <small class="text-muted">旧版提取码字段，建议使用上方的资源链接模块添加提取码</small>
                 </div>
             </div>
 
@@ -334,6 +360,8 @@ include APP_PATH . '/views/admin/layout_header.php';
 $customJs = '
 <script>
 $(document).ready(function() {
+    var groupIndex = 1;
+    
     // 类型选择变化
     $("#typeSelect").change(function() {
         var typeId = $(this).val();
@@ -409,19 +437,86 @@ $(document).ready(function() {
         }
     });
 
-    // 添加资源链接行
-    $("#addResourceLinkRow").on("click", function() {
-        var row = `
-            <div class="row g-2 mb-2 resource-link-item">
-                <div class="col-4">
-                    <input type="text" class="form-control" name="resource_links_label[]" placeholder="按钮文字（可选）">
+    // 添加资源链接模块组
+    $("#addResourceGroup").on("click", function() {
+        var html = `
+            <div class="resource-group card mb-3" data-group-index="${groupIndex}">
+                <div class="card-header d-flex justify-content-between align-items-center py-2">
+                    <input type="text" class="form-control form-control-sm w-auto" 
+                           name="resource_group_title[${groupIndex}]"
+                           value="资源链接"
+                           placeholder="模块标题"
+                           style="max-width: 200px;">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-resource-group">
+                        <i class="bi bi-x"></i>
+                    </button>
                 </div>
-                <div class="col-8">
-                    <input type="text" class="form-control" name="resource_links_url[]" placeholder="https://...">
+                <div class="card-body py-2">
+                    <div class="resource-links-list">
+                        <div class="row g-2 mb-2 resource-link-item">
+                            <div class="col-3">
+                                <select class="form-select form-select-sm" name="resource_group_label[${groupIndex}][]">
+                                    <option value="资源链接" selected>资源链接</option>
+                                    <option value="提取码">提取码</option>
+                                </select>
+                            </div>
+                            <div class="col-8">
+                                <input type="text" class="form-control form-control-sm" 
+                                       name="resource_group_url[${groupIndex}][]"
+                                       placeholder="链接或提取码">
+                            </div>
+                            <div class="col-1">
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-link-row">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm add-link-row">
+                        <i class="bi bi-plus"></i> 添加链接
+                    </button>
                 </div>
             </div>
         `;
-        $("#resourceLinksList").append(row);
+        $("#resourceGroupsContainer").append(html);
+        groupIndex++;
+    });
+
+    // 删除资源链接模块组
+    $(document).on("click", ".remove-resource-group", function() {
+        $(this).closest(".resource-group").remove();
+    });
+
+    // 添加链接行
+    $(document).on("click", ".add-link-row", function() {
+        var $group = $(this).closest(".resource-group");
+        var gIndex = $group.data("group-index");
+        var html = `
+            <div class="row g-2 mb-2 resource-link-item">
+                <div class="col-3">
+                    <select class="form-select form-select-sm" name="resource_group_label[${gIndex}][]">
+                        <option value="资源链接" selected>资源链接</option>
+                        <option value="提取码">提取码</option>
+                    </select>
+                </div>
+                <div class="col-8">
+                    <input type="text" class="form-control form-control-sm" 
+                           name="resource_group_url[${gIndex}][]"
+                           placeholder="链接或提取码">
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-link-row">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        $group.find(".resource-links-list").append(html);
+    });
+
+    // 删除链接行
+    $(document).on("click", ".remove-link-row", function() {
+        $(this).closest(".resource-link-item").remove();
     });
 });
 </script>

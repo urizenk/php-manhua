@@ -202,8 +202,7 @@ $customCss = '
         text-decoration: none;
         font-weight: bold;
         font-size: 1rem;
-        display: inline-flex;
-        align-items: center;
+        display: inline;
     }
     .manga-link:hover {
         text-decoration: underline;
