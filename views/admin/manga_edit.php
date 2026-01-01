@@ -38,19 +38,19 @@ if ($rawResourceLink !== '') {
         }
         // 旧格式：单组资源链接（兼容）
         elseif (isset($decoded['items']) && is_array($decoded['items'])) {
-            $title = trim((string)($decoded['title'] ?? '资源链接')) ?: '资源链接';
+            $resGroupTitle = trim((string)($decoded['title'] ?? '资源链接')) ?: '资源链接';
             $items = [];
             foreach ($decoded['items'] as $item) {
                 if (!is_array($item)) continue;
-                $url = trim((string)($item['url'] ?? ''));
-                if ($url === '') continue;
+                $itemUrl = trim((string)($item['url'] ?? ''));
+                if ($itemUrl === '') continue;
                 $items[] = [
                     'label' => trim((string)($item['label'] ?? '')),
-                    'url'   => $url,
+                    'url'   => $itemUrl,
                 ];
             }
             if (!empty($items)) {
-                $resourceGroups[] = ['title' => $title, 'items' => $items];
+                $resourceGroups[] = ['title' => $resGroupTitle, 'items' => $items];
             }
         }
     } else {

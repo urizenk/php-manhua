@@ -117,6 +117,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             break;
+            
+        case 'update_sort':
+            $tagId = $_POST['tag_id'] ?? 0;
+            $sortOrder = (int)($_POST['sort_order'] ?? 0);
+            
+            if ($tagId) {
+                $result = $db->update(
+                    'tags',
+                    ['sort_order' => $sortOrder],
+                    'id = ?',
+                    [$tagId]
+                );
+                
+                $message = $result !== false ? '排序更新成功' : '排序更新失败';
+                $messageType = $result !== false ? 'success' : 'danger';
+            }
+            break;
+            
+        case 'move_up':
+        case 'move_down':
+            $tagId = $_POST['tag_id'] ?? 0;
+            
+            if ($tagId) {
+                // 获取当前标签信息
+                $currentTag = $db->queryOne("SELECT * FROM tags WHERE id = ?", [$tagId]);
+                
+                if ($currentTag) {
+                    $typeId = $currentTag['type_id'];
+                    $currentSort = (int)$currentTag['sort_order'];
+                    
+                    if ($action === 'move_up') {
+                        // 找到排序值比当前小的最大的那个（上一个）
+                        $swapTag = $db->queryOne(
+                            "SELECT * FROM tags WHERE type_id = ? AND sort_order < ? ORDER BY sort_order DESC LIMIT 1",
+                            [$typeId, $currentSort]
+                        );
+                    } else {
+                        // 找到排序值比当前大的最小的那个（下一个）
+                        $swapTag = $db->queryOne(
+                            "SELECT * FROM tags WHERE type_id = ? AND sort_order > ? ORDER BY sort_order ASC LIMIT 1",
+                            [$typeId, $currentSort]
+                        );
+                    }
+                    
+                    if ($swapTag) {
+                        // 交换排序值
+                        $db->update('tags', ['sort_order' => $swapTag['sort_order']], 'id = ?', [$tagId]);
+                        $db->update('tags', ['sort_order' => $currentSort], 'id = ?', [$swapTag['id']]);
+                        $message = '排序调整成功';
+                        $messageType = 'success';
+                    } else {
+                        $message = $action === 'move_up' ? '已经是第一个了' : '已经是最后一个了';
+                        $messageType = 'warning';
+                    }
+                }
+            }
+            break;
     }
 }
 
@@ -227,11 +284,12 @@ include APP_PATH . '/views/admin/layout_header.php';
                             <th>标签名称</th>
                             <th width="120">标签类型</th>
                             <th width="100">关联漫画</th>
-                            <th width="150">操作</th>
+                            <th width="140">排序</th>
+                            <th width="200">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($tagsByType[$type['id']] as $tag): ?>
+                        <?php foreach ($tagsByType[$type['id']] as $index => $tag): ?>
                             <tr>
                                 <td><?php echo $tag['id']; ?></td>
                                 <td>
@@ -252,6 +310,25 @@ include APP_PATH . '/views/admin/layout_header.php';
                                 </td>
                                 <td>
                                     <span class="badge bg-info"><?php echo $tag['manga_count']; ?> 个</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="action" value="move_up">
+                                            <input type="hidden" name="tag_id" value="<?php echo $tag['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="上移" <?php echo $index === 0 ? 'disabled' : ''; ?>>
+                                                <i class="bi bi-arrow-up"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="action" value="move_down">
+                                            <input type="hidden" name="tag_id" value="<?php echo $tag['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="下移" <?php echo $index === count($tagsByType[$type['id']]) - 1 ? 'disabled' : ''; ?>>
+                                                <i class="bi bi-arrow-down"></i>
+                                            </button>
+                                        </form>
+                                        <span class="badge bg-secondary ms-1" title="排序值"><?php echo (int)$tag['sort_order']; ?></span>
+                                    </div>
                                 </td>
                                 <td class="table-actions">
                                     <button class="btn btn-sm btn-outline-primary edit-tag" 
