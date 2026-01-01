@@ -126,23 +126,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_manga'])) {
         $groups = [];
         if (is_array($resourceGroupTitles)) {
             foreach ($resourceGroupTitles as $groupIndex => $groupTitle) {
-                $title = trim((string)$groupTitle) ?: '资源链接';
+                $groupTitleStr = trim((string)$groupTitle) ?: '资源链接';
                 $items = [];
                 
                 $labels = $resourceGroupLabels[$groupIndex] ?? [];
                 $urls = $resourceGroupUrls[$groupIndex] ?? [];
                 
                 if (is_array($urls)) {
-                    foreach ($urls as $i => $url) {
-                        $url = trim((string)$url);
-                        if ($url === '') continue;
+                    foreach ($urls as $i => $urlItem) {
+                        $urlItem = trim((string)$urlItem);
+                        if ($urlItem === '') continue;
                         $label = isset($labels[$i]) ? trim((string)$labels[$i]) : '';
-                        $items[] = ['label' => $label, 'url' => $url];
+                        $items[] = ['label' => $label, 'url' => $urlItem];
                     }
                 }
                 
                 if (!empty($items)) {
-                    $groups[] = ['title' => $title, 'items' => $items];
+                    $groups[] = ['title' => $groupTitleStr, 'items' => $items];
                 }
             }
         }

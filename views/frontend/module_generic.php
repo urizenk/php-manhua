@@ -35,7 +35,7 @@ $keyword = $_GET['keyword'] ?? '';
 
 // 获取该板块下的所有标签（按排序）
 $tags = $db->query(
-    "SELECT * FROM tags WHERE type_id = ? ORDER BY sort_order, id",
+    "SELECT * FROM tags WHERE type_id = ? ORDER BY sort_order ASC, id DESC",
     [$moduleType['id']]
 );
 
