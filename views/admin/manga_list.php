@@ -57,14 +57,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['batch_action'])) {
                 case 'change_tag':
                     $newTagId = (int)($_POST['new_tag_id'] ?? 0);
                     if ($newTagId) {
-                        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-                        $params = array_merge([$newTagId], $ids);
-                        $affected = $db->execute("UPDATE mangas SET tag_id = ? WHERE id IN ($placeholders)", $params);
-                        if ($affected !== false) {
-                            $message = '批量修改标签成功';
-                            $messageType = 'success';
+                        // 获取新标签所属的type_id
+                        $tagInfo = $db->queryOne("SELECT type_id FROM tags WHERE id = ?", [$newTagId]);
+                        if ($tagInfo) {
+                            $newTypeId = $tagInfo['type_id'];
+                            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                            $params = array_merge([$newTagId, $newTypeId], $ids);
+                            // 同时更新tag_id和type_id，确保漫画在新模块下正确显示
+                            $affected = $db->execute("UPDATE mangas SET tag_id = ?, type_id = ? WHERE id IN ($placeholders)", $params);
+                            if ($affected !== false) {
+                                $message = '批量修改标签成功（已同步更新所属模块）';
+                                $messageType = 'success';
+                            } else {
+                                $message = '批量修改标签失败';
+                                $messageType = 'danger';
+                            }
                         } else {
-                            $message = '批量修改标签失败';
+                            $message = '标签不存在';
                             $messageType = 'danger';
                         }
                     } else {

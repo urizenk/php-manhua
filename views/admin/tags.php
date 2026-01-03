@@ -100,11 +100,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $tagId = $_POST['tag_id'] ?? 0;
                 $tagName = trim($_POST['tag_name'] ?? '');
+                $tagType = $_POST['tag_type'] ?? 'category';
+                $sortOrder = (int)($_POST['sort_order'] ?? 0);
                 
                 if ($tagId && $tagName) {
                     $result = $db->update(
                         'tags',
-                        ['tag_name' => $tagName],
+                        [
+                            'tag_name' => $tagName,
+                            'tag_type' => $tagType,
+                            'sort_order' => $sortOrder
+                        ],
                         'id = ?',
                         [$tagId]
                     );
@@ -333,7 +339,9 @@ include APP_PATH . '/views/admin/layout_header.php';
                                 <td class="table-actions">
                                     <button class="btn btn-sm btn-outline-primary edit-tag" 
                                             data-id="<?php echo $tag['id']; ?>"
-                                            data-name="<?php echo htmlspecialchars($tag['tag_name']); ?>">
+                                            data-name="<?php echo htmlspecialchars($tag['tag_name']); ?>"
+                                            data-type="<?php echo htmlspecialchars($tag['tag_type'] ?? 'category'); ?>"
+                                            data-sort="<?php echo (int)($tag['sort_order'] ?? 0); ?>">
                                         <i class="bi bi-pencil"></i> 编辑
                                     </button>
                                     
@@ -375,6 +383,22 @@ include APP_PATH . '/views/admin/layout_header.php';
                         <label class="form-label">标签名称</label>
                         <input type="text" class="form-control" name="tag_name" id="edit-tag-name" required>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">标签类型</label>
+                        <select class="form-select" name="tag_type" id="edit-tag-type">
+                            <option value="date">日期标签</option>
+                            <option value="letter">字母标签</option>
+                            <option value="category">分类标签</option>
+                            <option value="author">作者标签</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">排序值</label>
+                        <input type="number" class="form-control" name="sort_order" id="edit-sort-order" value="0">
+                        <small class="text-muted">数值越小越靠前</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -392,9 +416,13 @@ $(document).ready(function() {
     $(".edit-tag").click(function() {
         var id = $(this).data("id");
         var name = $(this).data("name");
+        var type = $(this).data("type") || "category";
+        var sort = $(this).data("sort") || 0;
         
         $("#edit-tag-id").val(id);
         $("#edit-tag-name").val(name);
+        $("#edit-tag-type").val(type);
+        $("#edit-sort-order").val(sort);
         $("#editModal").modal("show");
     });
 });
